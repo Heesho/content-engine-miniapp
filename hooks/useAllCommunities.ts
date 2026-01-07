@@ -103,10 +103,11 @@ export function useCommunityStates(
 
   const communityStates = states
     ?.map((result, index) => {
-      console.log(`Community ${communityAddresses[index]}:`, result.result);
+      const state = result.result as UnitState | undefined;
+      console.log(`Community ${communityAddresses[index]} URI:`, state?.uri);
       return {
         address: communityAddresses[index],
-        state: result.result as UnitState | undefined,
+        state,
       };
     })
     .filter((item) => item.state);
