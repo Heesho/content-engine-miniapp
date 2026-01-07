@@ -8,8 +8,8 @@ import { Search, Rocket, Gavel, Info, User } from "lucide-react";
 export function NavBar() {
   const pathname = usePathname();
 
-  // Check if we're on a rig detail page
-  const isRigPage = pathname.startsWith("/rig/");
+  // Check if we're on a community detail page
+  const isCommunityPage = pathname.startsWith("/community/");
 
   return (
     <nav
@@ -25,7 +25,7 @@ export function NavBar() {
           href="/explore"
           className={cn(
             "flex items-center justify-center p-2.5 transition-colors rounded-full",
-            pathname === "/explore" || isRigPage
+            pathname === "/explore" || isCommunityPage
               ? "text-purple-500"
               : "text-gray-500 hover:text-gray-300"
           )}

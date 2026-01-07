@@ -38,7 +38,6 @@ export default function LaunchPage() {
   const [tokenName, setTokenName] = useState("");
   const [tokenSymbol, setTokenSymbol] = useState("");
   const [tokenDescription, setTokenDescription] = useState("");
-  const [defaultMessage, setDefaultMessage] = useState("");
   const [links, setLinks] = useState<string[]>([]);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -226,7 +225,7 @@ export default function LaunchPage() {
     if (!tokenSymbol.trim()) return "Token symbol is required";
     if (tokenSymbol.length > 10) return "Symbol must be 10 characters or less";
     if (userDonutBalance !== undefined && donutAmountBigInt > userDonutBalance) {
-      return "Insufficient DONUT balance (need 10 DONUT)";
+      return "Insufficient DONUT balance (need 1,000 DONUT)";
     }
     return null;
   }, [tokenName, tokenSymbol, donutAmountBigInt, userDonutBalance]);
@@ -245,7 +244,6 @@ export default function LaunchPage() {
           symbol: tokenSymbol.trim().toUpperCase(),
           image: imageUri,
           description: tokenDescription.trim(),
-          defaultMessage: defaultMessage.trim() || "gm",
           links: validLinks,
         }),
       });
@@ -261,7 +259,7 @@ export default function LaunchPage() {
       console.error("Metadata upload failed:", error);
       return null;
     }
-  }, [tokenName, tokenSymbol, tokenDescription, defaultMessage, links]);
+  }, [tokenName, tokenSymbol, tokenDescription, links]);
 
   const handleLaunch = useCallback(async () => {
     resetLaunchResult();
@@ -378,6 +376,7 @@ export default function LaunchPage() {
           {/* Header */}
           <div className="mb-2">
             <h1 className="text-2xl font-bold tracking-wide">LAUNCH</h1>
+            <p className="text-xs text-zinc-500 mt-1">Create a new community with its own token</p>
           </div>
 
           {/* Launch Form */}
@@ -427,7 +426,7 @@ export default function LaunchPage() {
                     type="text"
                     value={tokenName}
                     onChange={(e) => setTokenName(e.target.value)}
-                    placeholder="Token Name"
+                    placeholder="Community Name"
                     maxLength={50}
                     className="w-full rounded-lg bg-zinc-900 px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none border border-zinc-800"
                   />
@@ -452,25 +451,12 @@ export default function LaunchPage() {
                 <textarea
                   value={tokenDescription}
                   onChange={(e) => setTokenDescription(e.target.value)}
-                  placeholder="Tell people about your token..."
+                  placeholder="Tell people about your community..."
                   maxLength={280}
                   rows={2}
                   className="w-full rounded-lg bg-zinc-900 px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none border border-zinc-800 resize-none"
                 />
                 <div className="text-[9px] text-zinc-600 text-right">{tokenDescription.length}/280</div>
-              </div>
-
-              {/* Default Message */}
-              <div className="mt-2">
-                <label className="text-[10px] text-zinc-500 mb-1 block">Default mine message</label>
-                <input
-                  type="text"
-                  value={defaultMessage}
-                  onChange={(e) => setDefaultMessage(e.target.value)}
-                  placeholder="gm"
-                  maxLength={100}
-                  className="w-full rounded-lg bg-zinc-900 px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none border border-zinc-800"
-                />
               </div>
 
               {/* Links Section */}
@@ -575,7 +561,7 @@ export default function LaunchPage() {
                 <PartyPopper className="w-8 h-8 text-purple-400" />
               </div>
             </div>
-            <h2 className="text-xl font-bold mb-2">Franchise Opened!</h2>
+            <h2 className="text-xl font-bold mb-2">Community Launched!</h2>
             <p className="text-zinc-400 mb-6">
               <span className="text-white font-semibold">${launchedToken.symbol}</span> ({launchedToken.name}) is now live!
             </p>
@@ -600,7 +586,7 @@ export default function LaunchPage() {
                 }}
                 className="w-full py-3 rounded-xl bg-zinc-800 text-white font-semibold hover:bg-zinc-700 transition-colors"
               >
-                View Tokens
+                View Communities
               </button>
             </div>
           </div>

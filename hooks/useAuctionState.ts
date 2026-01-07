@@ -8,17 +8,17 @@ import {
 } from "@/lib/contracts";
 
 export function useAuctionState(
-  rigAddress: `0x${string}` | undefined,
+  contentAddress: `0x${string}` | undefined,
   account: `0x${string}` | undefined
 ) {
   const { data: rawAuctionState, refetch, isLoading, error } = useReadContract({
     address: CONTRACT_ADDRESSES.multicall as `0x${string}`,
     abi: MULTICALL_ABI,
     functionName: "getAuction",
-    args: rigAddress ? [rigAddress, account ?? zeroAddress] : undefined,
+    args: contentAddress ? [contentAddress, account ?? zeroAddress] : undefined,
     chainId: base.id,
     query: {
-      enabled: !!rigAddress,
+      enabled: !!contentAddress,
       refetchInterval: 3_000,
     },
   });
@@ -34,17 +34,17 @@ export function useAuctionState(
 }
 
 export type AuctionListItem = {
-  rigAddress: `0x${string}`;
+  communityAddress: `0x${string}`;
   auctionState: AuctionState;
-  profitLoss: bigint; // WETH value - LP cost in DONUT equivalent
+  profitLoss: bigint; // USDC value - LP cost in USDC equivalent
   isProfitable: boolean;
 };
 
 export function useAllAuctionStates(
-  rigAddresses: `0x${string}`[],
+  communityAddresses: `0x${string}`[],
   account: `0x${string}` | undefined
 ) {
-  const contracts = rigAddresses.map((address) => ({
+  const contracts = communityAddresses.map((address) => ({
     address: CONTRACT_ADDRESSES.multicall as `0x${string}`,
     abi: MULTICALL_ABI,
     functionName: "getAuction" as const,
@@ -55,7 +55,7 @@ export function useAllAuctionStates(
   const { data: states, isLoading, error, refetch } = useReadContracts({
     contracts,
     query: {
-      enabled: rigAddresses.length > 0,
+      enabled: communityAddresses.length > 0,
       refetchInterval: 10_000,
     },
   });
@@ -65,17 +65,19 @@ export function useAllAuctionStates(
       const state = result.result as AuctionState | undefined;
       if (!state) return null;
 
-      // Calculate profit/loss
-      // LP cost = price * paymentTokenPrice (LP token value in underlying)
-      // WETH value = wethAccumulated
-      // For simplicity, compare WETH accumulated vs LP price * LP value
-      const lpCostInWeth =
+      // Calculate profit/loss in USDC (6 decimals)
+      // LP cost = price * paymentTokenPrice (LP token value in DONUT)
+      // Quote value = quoteAccumulated (USDC)
+      // For simplicity, compare USDC accumulated vs LP price in USDC equivalent
+      // Note: This is a rough approximation since LP price is in DONUT terms
+      const lpCostInDonut =
         (state.price * state.paymentTokenPrice) / BigInt(1e18);
-      const profitLoss = state.wethAccumulated - lpCostInWeth;
+      // Convert DONUT to USDC equivalent (using quoteAccumulated directly as baseline)
+      const profitLoss = state.quoteAccumulated - lpCostInDonut;
       const isProfitable = profitLoss > 0n;
 
       return {
-        rigAddress: rigAddresses[index],
+        communityAddress: communityAddresses[index],
         auctionState: state,
         profitLoss,
         isProfitable,

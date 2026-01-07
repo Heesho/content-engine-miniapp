@@ -4,53 +4,53 @@ import { useEffect, useState, useRef } from "react";
 import { Search } from "lucide-react";
 
 import { NavBar } from "@/components/nav-bar";
-import { RigCard } from "@/components/rig-card";
-import { useExploreRigs, type SortOption } from "@/hooks/useAllRigs";
+import { CommunityCard } from "@/components/community-card";
+import { useExploreCommunities, type SortOption } from "@/hooks/useAllCommunities";
 import { useFarcaster } from "@/hooks/useFarcaster";
 import { cn, getDonutPrice } from "@/lib/utils";
 import { DEFAULT_DONUT_PRICE_USD, PRICE_REFETCH_INTERVAL_MS } from "@/lib/constants";
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: "trending", label: "Bump" },
-  { value: "top", label: "Top" },
+  { value: "active", label: "Active" },
   { value: "new", label: "New" },
+  { value: "top", label: "Top" },
 ];
 
 export default function ExplorePage() {
-  const [sortBy, setSortBy] = useState<SortOption>("trending");
+  const [sortBy, setSortBy] = useState<SortOption>("active");
   const [searchQuery, setSearchQuery] = useState("");
   const [donutUsdPrice, setDonutUsdPrice] = useState<number>(DEFAULT_DONUT_PRICE_USD);
-  const [newBumpAddress, setNewBumpAddress] = useState<string | null>(null);
-  const prevTopRigRef = useRef<string | null>(null);
+  const [newActivityAddress, setNewActivityAddress] = useState<string | null>(null);
+  const prevTopCommunityRef = useRef<string | null>(null);
 
   // Farcaster context and wallet connection
   const { address } = useFarcaster();
 
-  // Get rigs data
-  const { rigs, isLoading } = useExploreRigs(sortBy, searchQuery, address);
+  // Get communities data
+  const { communities, isLoading } = useExploreCommunities(sortBy, searchQuery, address);
 
-  // Track when a new rig bumps to the top
+  // Track when a new community moves to the top
   useEffect(() => {
-    if (sortBy !== "trending" || rigs.length === 0) {
-      prevTopRigRef.current = null;
-      setNewBumpAddress(null);
+    if (sortBy !== "active" || communities.length === 0) {
+      prevTopCommunityRef.current = null;
+      setNewActivityAddress(null);
       return;
     }
 
-    const currentTopRig = rigs[0].address;
+    const currentTopCommunity = communities[0].address;
 
-    // If this is a different rig than before, it's a new bump
-    if (prevTopRigRef.current && prevTopRigRef.current !== currentTopRig) {
-      setNewBumpAddress(currentTopRig);
+    // If this is a different community than before, it's new activity
+    if (prevTopCommunityRef.current && prevTopCommunityRef.current !== currentTopCommunity) {
+      setNewActivityAddress(currentTopCommunity);
       // Clear the "new" animation after it plays
       const timer = setTimeout(() => {
-        setNewBumpAddress(null);
+        setNewActivityAddress(null);
       }, 3000);
       return () => clearTimeout(timer);
     }
 
-    prevTopRigRef.current = currentTopRig;
-  }, [rigs, sortBy]);
+    prevTopCommunityRef.current = currentTopCommunity;
+  }, [communities, sortBy]);
 
   // Fetch DONUT price
   useEffect(() => {
@@ -108,25 +108,25 @@ export default function ExplorePage() {
             ))}
           </div>
 
-          {/* Rig List */}
+          {/* Community List */}
           <div className="flex-1 overflow-y-auto scrollbar-hide">
-            {isLoading ? null : rigs.length === 0 ? (
+            {isLoading ? null : communities.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
-                <p className="text-lg font-semibold">No rigs found</p>
+                <p className="text-lg font-semibold">No communities found</p>
                 <p className="text-sm mt-1">
                   {searchQuery
                     ? "Try a different search term"
-                    : "Be the first to launch a rig!"}
+                    : "Be the first to launch a community!"}
                 </p>
               </div>
             ) : (
-              rigs.map((rig, index) => (
-                <RigCard
-                  key={rig.address}
-                  rig={rig}
+              communities.map((community, index) => (
+                <CommunityCard
+                  key={community.address}
+                  community={community}
                   donutUsdPrice={donutUsdPrice}
-                  isTopBump={sortBy === "trending" && index === 0}
-                  isNewBump={rig.address === newBumpAddress}
+                  isActive={sortBy === "active" && index === 0}
+                  isNew={community.address === newActivityAddress}
                 />
               ))
             )}

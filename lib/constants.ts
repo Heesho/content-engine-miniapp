@@ -16,6 +16,8 @@ export const DEADLINE_BUFFER_SECONDS = 15 * 60; // 15 minutes
 
 // Token decimals
 export const TOKEN_DECIMALS = 18;
+export const USDC_DECIMALS = 6;
+export const DONUT_DECIMALS = 18;
 
 // Chain configuration
 export const DEFAULT_CHAIN_ID = base.id;

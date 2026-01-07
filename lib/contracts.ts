@@ -1,11 +1,11 @@
 export const CONTRACT_ADDRESSES = {
-  // Core launchpad contracts
-  core: "0xA35588D152F45C95f5b152e099647f081BD9F5AB",
-  multicall: "0x5D16A5EB8Ac507eF417A44b8d767104dC52EFa87",
+  // Core Content Engine contracts
+  core: "0x1595905587751a7777dC6edc740bfCF5707cb42e",
+  multicall: "0x50357c9A126274f2cC914f5C0BAf9472f42Cb059",
   // Token addresses
   weth: "0x4200000000000000000000000000000000000006",
-  donut: "0xae4a37d554c6d6f3e398546d8566b25052e0169c",
-  usdc: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  usdc: "0xe90495BE187d434e23A9B1FeC0B6Ce039700870e", // MockUSDC - quote token
+  donut: "0xD50B69581362C60Ce39596B237C71e07Fc4F6fdA", // MockDONUT
   // Uniswap V2 on Base
   uniV2Router: "0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24",
   uniV2Factory: "0x8909Dc15e40173Ff4699343b6eB8132c65e18eC6",
@@ -14,53 +14,67 @@ export const CONTRACT_ADDRESSES = {
 // Native ETH placeholder address used by 0x API
 export const NATIVE_ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
-// Core contract ABI - for reading deployed rigs and their mappings
+// Core contract ABI - for reading deployed content engines and their mappings
 export const CORE_ABI = [
   {
     inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "deployedRigs",
+    name: "deployedContents",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
-    name: "deployedRigsLength",
+    name: "deployedContentsLength",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "isDeployedRig",
+    name: "isDeployedContent",
     outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "rigToLauncher",
+    name: "contentToLauncher",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "rigToUnit",
+    name: "contentToUnit",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "rigToAuction",
+    name: "contentToAuction",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "rigToLP",
+    name: "contentToMinter",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "", type: "address" }],
+    name: "contentToRewarder",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "", type: "address" }],
+    name: "contentToLP",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
@@ -86,28 +100,35 @@ export const CORE_ABI = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    inputs: [],
+    name: "quote",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
 // Multicall ABI - for batched operations and state queries
 export const MULTICALL_ABI = [
-  // Mine function - mine a rig using ETH (wraps to WETH)
+  // Collect function - collect content using USDC
   {
     inputs: [
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "content", type: "address" },
+      { internalType: "uint256", name: "tokenId", type: "uint256" },
       { internalType: "uint256", name: "epochId", type: "uint256" },
       { internalType: "uint256", name: "deadline", type: "uint256" },
       { internalType: "uint256", name: "maxPrice", type: "uint256" },
-      { internalType: "string", name: "uri", type: "string" },
     ],
-    name: "mine",
+    name: "collect",
     outputs: [],
-    stateMutability: "payable",
+    stateMutability: "nonpayable",
     type: "function",
   },
   // Buy function - buy from auction using LP tokens
   {
     inputs: [
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "content", type: "address" },
       { internalType: "uint256", name: "epochId", type: "uint256" },
       { internalType: "uint256", name: "deadline", type: "uint256" },
       { internalType: "uint256", name: "maxPaymentTokenAmount", type: "uint256" },
@@ -117,7 +138,7 @@ export const MULTICALL_ABI = [
     stateMutability: "nonpayable",
     type: "function",
   },
-  // Launch function - launch a new rig
+  // Launch function - launch a new content engine
   {
     inputs: [
       {
@@ -131,9 +152,8 @@ export const MULTICALL_ABI = [
           { internalType: "uint256", name: "initialUps", type: "uint256" },
           { internalType: "uint256", name: "tailUps", type: "uint256" },
           { internalType: "uint256", name: "halvingPeriod", type: "uint256" },
-          { internalType: "uint256", name: "rigEpochPeriod", type: "uint256" },
-          { internalType: "uint256", name: "rigPriceMultiplier", type: "uint256" },
-          { internalType: "uint256", name: "rigMinInitPrice", type: "uint256" },
+          { internalType: "uint256", name: "contentMinInitPrice", type: "uint256" },
+          { internalType: "bool", name: "contentIsModerated", type: "bool" },
           { internalType: "uint256", name: "auctionInitPrice", type: "uint256" },
           { internalType: "uint256", name: "auctionEpochPeriod", type: "uint256" },
           { internalType: "uint256", name: "auctionPriceMultiplier", type: "uint256" },
@@ -147,40 +167,58 @@ export const MULTICALL_ABI = [
     name: "launch",
     outputs: [
       { internalType: "address", name: "unit", type: "address" },
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "content", type: "address" },
+      { internalType: "address", name: "minter", type: "address" },
+      { internalType: "address", name: "rewarder", type: "address" },
       { internalType: "address", name: "auction", type: "address" },
       { internalType: "address", name: "lpToken", type: "address" },
     ],
     stateMutability: "nonpayable",
     type: "function",
   },
-  // getRig function - get aggregated rig state
+  // updateMinterPeriod - trigger weekly emission
+  {
+    inputs: [{ internalType: "address", name: "content", type: "address" }],
+    name: "updateMinterPeriod",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  // claimRewards - claim rewards from rewarder
+  {
+    inputs: [{ internalType: "address", name: "content", type: "address" }],
+    name: "claimRewards",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  // getContent function - get aggregated content state
   {
     inputs: [
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "content", type: "address" },
       { internalType: "address", name: "account", type: "address" },
     ],
-    name: "getRig",
+    name: "getContent",
     outputs: [
       {
         components: [
-          { internalType: "uint256", name: "epochId", type: "uint256" },
-          { internalType: "uint256", name: "initPrice", type: "uint256" },
-          { internalType: "uint256", name: "epochStartTime", type: "uint256" },
-          { internalType: "uint256", name: "glazed", type: "uint256" },
-          { internalType: "uint256", name: "price", type: "uint256" },
-          { internalType: "uint256", name: "ups", type: "uint256" },
-          { internalType: "uint256", name: "nextUps", type: "uint256" },
+          { internalType: "address", name: "launcher", type: "address" },
+          { internalType: "address", name: "minter", type: "address" },
+          { internalType: "address", name: "rewarder", type: "address" },
+          { internalType: "address", name: "auction", type: "address" },
+          { internalType: "address", name: "unit", type: "address" },
+          { internalType: "address", name: "lp", type: "address" },
+          { internalType: "address", name: "treasury", type: "address" },
+          { internalType: "string", name: "uri", type: "string" },
+          { internalType: "bool", name: "isModerated", type: "bool" },
+          { internalType: "uint256", name: "totalSupply", type: "uint256" },
+          { internalType: "uint256", name: "minInitPrice", type: "uint256" },
           { internalType: "uint256", name: "unitPrice", type: "uint256" },
-          { internalType: "address", name: "miner", type: "address" },
-          { internalType: "string", name: "epochUri", type: "string" },
-          { internalType: "string", name: "rigUri", type: "string" },
-          { internalType: "uint256", name: "ethBalance", type: "uint256" },
-          { internalType: "uint256", name: "wethBalance", type: "uint256" },
+          { internalType: "uint256", name: "quoteBalance", type: "uint256" },
           { internalType: "uint256", name: "donutBalance", type: "uint256" },
           { internalType: "uint256", name: "unitBalance", type: "uint256" },
         ],
-        internalType: "struct Multicall.RigState",
+        internalType: "struct Multicall.ContentState",
         name: "state",
         type: "tuple",
       },
@@ -188,10 +226,87 @@ export const MULTICALL_ABI = [
     stateMutability: "view",
     type: "function",
   },
-  // getAuction function - get aggregated auction state
+  // getToken function - get state for a specific content token
   {
     inputs: [
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "content", type: "address" },
+      { internalType: "uint256", name: "tokenId", type: "uint256" },
+    ],
+    name: "getToken",
+    outputs: [
+      {
+        components: [
+          { internalType: "uint256", name: "tokenId", type: "uint256" },
+          { internalType: "address", name: "owner", type: "address" },
+          { internalType: "address", name: "creator", type: "address" },
+          { internalType: "bool", name: "isApproved", type: "bool" },
+          { internalType: "uint256", name: "stake", type: "uint256" },
+          { internalType: "uint256", name: "epochId", type: "uint256" },
+          { internalType: "uint256", name: "initPrice", type: "uint256" },
+          { internalType: "uint256", name: "startTime", type: "uint256" },
+          { internalType: "uint256", name: "price", type: "uint256" },
+          { internalType: "string", name: "tokenUri", type: "string" },
+        ],
+        internalType: "struct Multicall.TokenState",
+        name: "state",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  // getMinter function - get minter state
+  {
+    inputs: [{ internalType: "address", name: "content", type: "address" }],
+    name: "getMinter",
+    outputs: [
+      {
+        components: [
+          { internalType: "uint256", name: "activePeriod", type: "uint256" },
+          { internalType: "uint256", name: "weeklyEmission", type: "uint256" },
+          { internalType: "uint256", name: "currentUps", type: "uint256" },
+          { internalType: "uint256", name: "initialUps", type: "uint256" },
+          { internalType: "uint256", name: "tailUps", type: "uint256" },
+          { internalType: "uint256", name: "halvingPeriod", type: "uint256" },
+          { internalType: "uint256", name: "startTime", type: "uint256" },
+        ],
+        internalType: "struct Multicall.MinterState",
+        name: "state",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  // getRewarder function - get rewarder state
+  {
+    inputs: [
+      { internalType: "address", name: "content", type: "address" },
+      { internalType: "address", name: "account", type: "address" },
+    ],
+    name: "getRewarder",
+    outputs: [
+      {
+        components: [
+          { internalType: "uint256", name: "totalSupply", type: "uint256" },
+          { internalType: "uint256", name: "accountBalance", type: "uint256" },
+          { internalType: "uint256", name: "earnedUnit", type: "uint256" },
+          { internalType: "uint256", name: "earnedQuote", type: "uint256" },
+          { internalType: "uint256", name: "leftUnit", type: "uint256" },
+          { internalType: "uint256", name: "leftQuote", type: "uint256" },
+        ],
+        internalType: "struct Multicall.RewarderState",
+        name: "state",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  // getAuction function - get auction state
+  {
+    inputs: [
+      { internalType: "address", name: "content", type: "address" },
       { internalType: "address", name: "account", type: "address" },
     ],
     name: "getAuction",
@@ -204,8 +319,8 @@ export const MULTICALL_ABI = [
           { internalType: "address", name: "paymentToken", type: "address" },
           { internalType: "uint256", name: "price", type: "uint256" },
           { internalType: "uint256", name: "paymentTokenPrice", type: "uint256" },
-          { internalType: "uint256", name: "wethAccumulated", type: "uint256" },
-          { internalType: "uint256", name: "wethBalance", type: "uint256" },
+          { internalType: "uint256", name: "quoteAccumulated", type: "uint256" },
+          { internalType: "uint256", name: "quoteBalance", type: "uint256" },
           { internalType: "uint256", name: "donutBalance", type: "uint256" },
           { internalType: "uint256", name: "paymentTokenBalance", type: "uint256" },
         ],
@@ -227,7 +342,7 @@ export const MULTICALL_ABI = [
   },
   {
     inputs: [],
-    name: "weth",
+    name: "quote",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
@@ -300,57 +415,130 @@ export const ERC20_ABI = [
   },
 ] as const;
 
-// Rig contract ABI - for direct rig reads if needed
-export const RIG_ABI = [
+// Content contract ABI - ERC721Enumerable + custom functions
+export const CONTENT_ABI = [
+  // Create content NFT
+  {
+    inputs: [
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "string", name: "tokenUri", type: "string" },
+    ],
+    name: "create",
+    outputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  // Collect content
+  {
+    inputs: [
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "tokenId", type: "uint256" },
+      { internalType: "uint256", name: "epochId", type: "uint256" },
+      { internalType: "uint256", name: "deadline", type: "uint256" },
+      { internalType: "uint256", name: "maxPrice", type: "uint256" },
+    ],
+    name: "collect",
+    outputs: [{ internalType: "uint256", name: "price", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  // ERC721Enumerable functions
   {
     inputs: [],
-    name: "epochId",
+    name: "totalSupply",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [],
-    name: "initPrice",
+    inputs: [{ internalType: "uint256", name: "index", type: "uint256" }],
+    name: "tokenByIndex",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [],
-    name: "epochStartTime",
+    inputs: [
+      { internalType: "address", name: "owner", type: "address" },
+      { internalType: "uint256", name: "index", type: "uint256" },
+    ],
+    name: "tokenOfOwnerByIndex",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [],
+    inputs: [{ internalType: "address", name: "owner", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+    name: "ownerOf",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+    name: "tokenURI",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  // Custom Content functions
+  {
+    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
     name: "getPrice",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [],
-    name: "getUps",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "ups",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "miner",
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "id_Creator",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "id_IsApproved",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "id_Stake",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "id_EpochId",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "id_InitPrice",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "id_StartTime",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  // Content state
   {
     inputs: [],
     name: "uri",
@@ -374,6 +562,13 @@ export const RIG_ABI = [
   },
   {
     inputs: [],
+    name: "rewarder",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "treasury",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
@@ -381,57 +576,29 @@ export const RIG_ABI = [
   },
   {
     inputs: [],
-    name: "team",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "startTime",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "initialUps",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "tailUps",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "halvingPeriod",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "epochPeriod",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "priceMultiplier",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "minInitPrice",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "isModerated",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "name",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "symbol",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
     stateMutability: "view",
     type: "function",
   },
@@ -504,23 +671,97 @@ export const AUCTION_ABI = [
   },
 ] as const;
 
+// Rewarder contract ABI
+export const REWARDER_ABI = [
+  {
+    inputs: [{ internalType: "address", name: "account", type: "address" }],
+    name: "getReward",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "totalSupply",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "", type: "address" }],
+    name: "account_Balance",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "account", type: "address" },
+      { internalType: "address", name: "token", type: "address" },
+    ],
+    name: "earned",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "token", type: "address" }],
+    name: "left",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
+
 // TypeScript types for contract returns
-export type RigState = {
-  epochId: bigint;
-  initPrice: bigint;
-  epochStartTime: bigint;
-  glazed: bigint;
-  price: bigint;
-  ups: bigint;
-  nextUps: bigint;
+export type ContentState = {
+  launcher: `0x${string}`;
+  minter: `0x${string}`;
+  rewarder: `0x${string}`;
+  auction: `0x${string}`;
+  unit: `0x${string}`;
+  lp: `0x${string}`;
+  treasury: `0x${string}`;
+  uri: string;
+  isModerated: boolean;
+  totalSupply: bigint;
+  minInitPrice: bigint;
   unitPrice: bigint;
-  miner: `0x${string}`;
-  epochUri: string;
-  rigUri: string;
-  ethBalance: bigint;
-  wethBalance: bigint;
+  quoteBalance: bigint;
   donutBalance: bigint;
   unitBalance: bigint;
+};
+
+export type TokenState = {
+  tokenId: bigint;
+  owner: `0x${string}`;
+  creator: `0x${string}`;
+  isApproved: boolean;
+  stake: bigint;
+  epochId: bigint;
+  initPrice: bigint;
+  startTime: bigint;
+  price: bigint;
+  tokenUri: string;
+};
+
+export type MinterState = {
+  activePeriod: bigint;
+  weeklyEmission: bigint;
+  currentUps: bigint;
+  initialUps: bigint;
+  tailUps: bigint;
+  halvingPeriod: bigint;
+  startTime: bigint;
+};
+
+export type RewarderState = {
+  totalSupply: bigint;
+  accountBalance: bigint;
+  earnedUnit: bigint;
+  earnedQuote: bigint;
+  leftUnit: bigint;
+  leftQuote: bigint;
 };
 
 export type AuctionState = {
@@ -530,8 +771,8 @@ export type AuctionState = {
   paymentToken: `0x${string}`;
   price: bigint;
   paymentTokenPrice: bigint;
-  wethAccumulated: bigint;
-  wethBalance: bigint;
+  quoteAccumulated: bigint;
+  quoteBalance: bigint;
   donutBalance: bigint;
   paymentTokenBalance: bigint;
 };
@@ -546,25 +787,22 @@ export type LaunchParams = {
   initialUps: bigint;
   tailUps: bigint;
   halvingPeriod: bigint;
-  rigEpochPeriod: bigint;
-  rigPriceMultiplier: bigint;
-  rigMinInitPrice: bigint;
+  contentMinInitPrice: bigint;
+  contentIsModerated: boolean;
   auctionInitPrice: bigint;
   auctionEpochPeriod: bigint;
   auctionPriceMultiplier: bigint;
   auctionMinInitPrice: bigint;
 };
 
-// Default launch parameters
+// Default launch parameters for content engine
 export const LAUNCH_DEFAULTS = {
-  uri: "", // metadata URI for the unit token (can be set later by team)
   unitAmount: BigInt("10000000000000000000000"), // 10000 tokens (10000e18)
   initialUps: BigInt("4000000000000000000"), // 4 tokens/sec
   tailUps: BigInt("10000000000000000"), // 0.01 tokens/sec
   halvingPeriod: BigInt(30 * 24 * 60 * 60), // 30 days
-  rigEpochPeriod: BigInt(60 * 60), // 1 hour
-  rigPriceMultiplier: BigInt("2000000000000000000"), // 2x (2e18)
-  rigMinInitPrice: BigInt("100000000000000"), // 0.0001 ETH
+  contentMinInitPrice: BigInt("1000000"), // 1 USDC (6 decimals)
+  contentIsModerated: false, // No moderation by default
   auctionInitPrice: BigInt("1000000000000000000000"), // 1000 LP tokens
   auctionEpochPeriod: BigInt(24 * 60 * 60), // 24 hours
   auctionPriceMultiplier: BigInt("1200000000000000000"), // 1.2x (1.2e18)
@@ -630,3 +868,30 @@ export const UNIV2_PAIR_ABI = [
     type: "function",
   },
 ] as const;
+
+// Content metadata type (stored in IPFS)
+export type ContentMetadata = {
+  name?: string;
+  description?: string;
+  image?: string;
+  contentType: "image" | "text" | "link";
+  // For text content
+  text?: string;
+  // For link content
+  link?: string;
+  linkPreview?: {
+    title?: string;
+    description?: string;
+    image?: string;
+  };
+};
+
+// Community metadata type (stored in IPFS)
+export type CommunityMetadata = {
+  name: string;
+  symbol?: string;
+  description?: string;
+  image?: string;
+  defaultMessage?: string;
+  links?: string[];
+};

@@ -1,17 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { formatEther } from "viem";
+import { formatEther, formatUnits } from "viem";
+import { Coins } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NavBar } from "@/components/nav-bar";
 import { useFarcaster, getUserDisplayName, getUserHandle, initialsFrom } from "@/hooks/useFarcaster";
-import { useUserProfile, type UserRigData, type UserLaunchedRig } from "@/hooks/useUserProfile";
+import { useExploreCommunities } from "@/hooks/useAllCommunities";
+import { useAllPendingRewards, useClaimRewards } from "@/hooks/useRewards";
 import { cn, getDonutPrice } from "@/lib/utils";
-import { DEFAULT_DONUT_PRICE_USD, PRICE_REFETCH_INTERVAL_MS, ipfsToHttp } from "@/lib/constants";
+import { DEFAULT_DONUT_PRICE_USD, PRICE_REFETCH_INTERVAL_MS, ipfsToHttp, USDC_DECIMALS, TOKEN_DECIMALS } from "@/lib/constants";
 
-type TabOption = "mined" | "launched";
+type TabOption = "collected" | "launched";
 
 const formatTokenAmount = (value: bigint, maximumFractionDigits = 2) => {
   if (value === 0n) return "0";
@@ -24,12 +26,26 @@ const formatTokenAmount = (value: bigint, maximumFractionDigits = 2) => {
   });
 };
 
-function MinedRigCard({ rig }: { rig: UserRigData }) {
+function CommunityCard({ community, donutUsdPrice, showRewards }: {
+  community: {
+    address: `0x${string}`;
+    tokenName: string;
+    tokenSymbol: string;
+    uri?: string;
+    unitPrice: bigint;
+    totalSupply: bigint;
+    unitBalance?: bigint;
+    earnedUnit?: bigint;
+    earnedQuote?: bigint;
+  };
+  donutUsdPrice: number;
+  showRewards?: boolean;
+}) {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!rig.rigUri) return;
-    const metadataUrl = ipfsToHttp(rig.rigUri);
+    if (!community.uri) return;
+    const metadataUrl = ipfsToHttp(community.uri);
     if (!metadataUrl) return;
 
     fetch(metadataUrl)
@@ -40,51 +56,87 @@ function MinedRigCard({ rig }: { rig: UserRigData }) {
         }
       })
       .catch(() => {});
-  }, [rig.rigUri]);
+  }, [community.uri]);
+
+  // Calculate balance value
+  const tokenPriceUsd = community.unitPrice > 0n ? Number(formatEther(community.unitPrice)) * donutUsdPrice : 0;
+  const balanceValue = community.unitBalance
+    ? Number(formatUnits(community.unitBalance, TOKEN_DECIMALS)) * tokenPriceUsd
+    : 0;
+
+  // Calculate pending rewards
+  const pendingUnit = community.earnedUnit ?? 0n;
+  const pendingQuote = community.earnedQuote ?? 0n;
+  const pendingUnitUsd = pendingUnit > 0n ? Number(formatUnits(pendingUnit, TOKEN_DECIMALS)) * tokenPriceUsd : 0;
+  const pendingQuoteUsd = pendingQuote > 0n ? Number(formatUnits(pendingQuote, USDC_DECIMALS)) : 0;
+  const totalPendingUsd = pendingUnitUsd + pendingQuoteUsd;
 
   return (
-    <Link href={`/rig/${rig.address}`} className="block mb-1.5">
+    <Link href={`/community/${community.address}`} className="block mb-1.5">
       <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 transition-colors cursor-pointer">
         <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center overflow-hidden">
           {logoUrl ? (
             <img
               src={logoUrl}
-              alt={rig.tokenSymbol}
+              alt={community.tokenSymbol}
               className="w-12 h-12 object-cover rounded-xl"
             />
           ) : (
             <span className="text-purple-500 font-bold text-lg">
-              {rig.tokenSymbol.slice(0, 2)}
+              {community.tokenSymbol.slice(0, 2)}
             </span>
           )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-white truncate">
-            {rig.tokenName}
+            {community.tokenName}
           </div>
           <div className="text-sm text-gray-500">
-            {rig.tokenSymbol}
+            {community.tokenSymbol}
           </div>
         </div>
         <div className="flex-shrink-0 text-right">
-          <div className="text-sm font-semibold text-purple-500">
-            {formatTokenAmount(rig.userMined)} mined
-          </div>
-          <div className="text-xs text-gray-500">
-            {formatTokenAmount(rig.userEarned - rig.userSpent, 4)} ETH pnl
-          </div>
+          {showRewards && totalPendingUsd > 0 ? (
+            <>
+              <div className="text-sm font-semibold text-green-400">
+                +${totalPendingUsd.toFixed(2)}
+              </div>
+              <div className="text-xs text-gray-500">
+                pending rewards
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-sm font-semibold text-purple-500">
+                {community.unitBalance ? formatTokenAmount(community.unitBalance) : "0"}
+              </div>
+              <div className="text-xs text-gray-500">
+                ${balanceValue.toFixed(2)}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </Link>
   );
 }
 
-function LaunchedRigCard({ rig, donutUsdPrice }: { rig: UserLaunchedRig; donutUsdPrice: number }) {
+function LaunchedCommunityCard({ community, donutUsdPrice }: {
+  community: {
+    address: `0x${string}`;
+    tokenName: string;
+    tokenSymbol: string;
+    uri?: string;
+    unitPrice: bigint;
+    totalSupply: bigint;
+  };
+  donutUsdPrice: number;
+}) {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!rig.rigUri) return;
-    const metadataUrl = ipfsToHttp(rig.rigUri);
+    if (!community.uri) return;
+    const metadataUrl = ipfsToHttp(community.uri);
     if (!metadataUrl) return;
 
     fetch(metadataUrl)
@@ -95,12 +147,12 @@ function LaunchedRigCard({ rig, donutUsdPrice }: { rig: UserLaunchedRig; donutUs
         }
       })
       .catch(() => {});
-  }, [rig.rigUri]);
+  }, [community.uri]);
 
-  // Calculate market cap: totalMinted * unitPrice (in DONUT) * donutUsdPrice
-  const marketCapUsd = rig.unitPrice > 0n
-    ? Number(formatEther(rig.totalMinted)) * Number(formatEther(rig.unitPrice)) * donutUsdPrice
-    : 0;
+  // Calculate market cap
+  const tokenPriceUsd = community.unitPrice > 0n ? Number(formatEther(community.unitPrice)) * donutUsdPrice : 0;
+  const totalSupplyNum = Number(formatUnits(community.totalSupply, TOKEN_DECIMALS));
+  const marketCapUsd = totalSupplyNum * tokenPriceUsd;
 
   const formatUsd = (value: number) => {
     if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
@@ -109,27 +161,27 @@ function LaunchedRigCard({ rig, donutUsdPrice }: { rig: UserLaunchedRig; donutUs
   };
 
   return (
-    <Link href={`/rig/${rig.address}`} className="block mb-1.5">
+    <Link href={`/community/${community.address}`} className="block mb-1.5">
       <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 transition-colors cursor-pointer">
         <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center overflow-hidden">
           {logoUrl ? (
             <img
               src={logoUrl}
-              alt={rig.tokenSymbol}
+              alt={community.tokenSymbol}
               className="w-12 h-12 object-cover rounded-xl"
             />
           ) : (
             <span className="text-purple-500 font-bold text-lg">
-              {rig.tokenSymbol.slice(0, 2)}
+              {community.tokenSymbol.slice(0, 2)}
             </span>
           )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-white truncate">
-            {rig.tokenName}
+            {community.tokenName}
           </div>
           <div className="text-sm text-gray-500">
-            {rig.tokenSymbol}
+            {community.tokenSymbol}
           </div>
         </div>
         <div className="flex-shrink-0 text-right">
@@ -137,7 +189,7 @@ function LaunchedRigCard({ rig, donutUsdPrice }: { rig: UserLaunchedRig; donutUs
             {formatUsd(marketCapUsd)} mcap
           </div>
           <div className="text-xs text-gray-500">
-            {formatTokenAmount(rig.revenue, 4)} ETH earned
+            {Number(community.totalSupply).toLocaleString()} content
           </div>
         </div>
       </div>
@@ -146,11 +198,57 @@ function LaunchedRigCard({ rig, donutUsdPrice }: { rig: UserLaunchedRig; donutUs
 }
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState<TabOption>("mined");
+  const [activeTab, setActiveTab] = useState<TabOption>("collected");
   const [donutUsdPrice, setDonutUsdPrice] = useState<number>(DEFAULT_DONUT_PRICE_USD);
 
   const { user, address } = useFarcaster();
-  const { minedRigs, launchedRigs, isLoading } = useUserProfile(address);
+  const { communities, isLoading } = useExploreCommunities("active", "", address);
+
+  // Get addresses of communities user has launched
+  const launchedCommunities = useMemo(() => {
+    if (!address || !communities) return [];
+    return communities.filter(c =>
+      c.launcher && c.launcher.toLowerCase() === address.toLowerCase()
+    );
+  }, [communities, address]);
+
+  // Get communities where user has a balance (collected)
+  const collectedCommunities = useMemo(() => {
+    if (!address || !communities) return [];
+    return communities.filter(c => c.unitBalance && c.unitBalance > 0n);
+  }, [communities, address]);
+
+  // Get community addresses for rewards lookup
+  const communityAddresses = useMemo(() => {
+    return communities.map(c => c.address);
+  }, [communities]);
+
+  // Get pending rewards across all communities
+  const { pendingRewards, totalPendingUsd, refetch: refetchRewards } = useAllPendingRewards(
+    communityAddresses,
+    address
+  );
+
+  // Claim rewards hook
+  const { claimRewards, state: claimState, reset: resetClaim } = useClaimRewards();
+
+  const handleClaimAll = useCallback(async () => {
+    if (!address || !pendingRewards) return;
+
+    // Find communities with pending rewards
+    const communitiesWithRewards = Object.entries(pendingRewards)
+      .filter(([_, reward]) => reward.earnedUnit > 0n || reward.earnedQuote > 0n)
+      .map(([addr]) => addr as `0x${string}`);
+
+    // Claim from first community with rewards (could batch in future)
+    if (communitiesWithRewards.length > 0) {
+      await claimRewards(communitiesWithRewards[0]);
+      setTimeout(() => {
+        refetchRewards();
+        resetClaim();
+      }, 2000);
+    }
+  }, [address, pendingRewards, claimRewards, refetchRewards, resetClaim]);
 
   // Fetch DONUT price
   useEffect(() => {
@@ -213,20 +311,40 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {/* Pending Rewards Banner */}
+          {user && totalPendingUsd > 0 && (
+            <div className="mx-0.5 mb-3 p-3 rounded-xl bg-green-500/10 border border-green-500/30">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-xs text-green-400">Pending Rewards</div>
+                  <div className="text-lg font-bold text-green-400">+${totalPendingUsd.toFixed(2)}</div>
+                </div>
+                <button
+                  onClick={handleClaimAll}
+                  disabled={claimState === "pending" || claimState === "confirming"}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500 text-black font-semibold hover:bg-green-400 transition-colors disabled:opacity-50"
+                >
+                  <Coins className="w-4 h-4" />
+                  {claimState === "success" ? "Claimed!" : claimState === "pending" || claimState === "confirming" ? "Claiming..." : "Claim"}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Stats/Tabs */}
           {user && (
             <div className="grid grid-cols-2 gap-2 mb-3 px-0.5">
               <button
-                onClick={() => setActiveTab("mined")}
+                onClick={() => setActiveTab("collected")}
                 className={cn(
                   "p-3 rounded-xl text-center transition-colors",
-                  activeTab === "mined"
+                  activeTab === "collected"
                     ? "bg-purple-500/20 ring-2 ring-purple-500"
                     : "bg-zinc-900 hover:bg-zinc-800"
                 )}
               >
-                <div className="text-2xl font-bold text-purple-500">{minedRigs.length}</div>
-                <div className="text-xs text-gray-500">Rigs Mined</div>
+                <div className="text-2xl font-bold text-purple-500">{collectedCommunities.length}</div>
+                <div className="text-xs text-gray-500">Communities</div>
               </button>
               <button
                 onClick={() => setActiveTab("launched")}
@@ -237,8 +355,8 @@ export default function ProfilePage() {
                     : "bg-zinc-900 hover:bg-zinc-800"
                 )}
               >
-                <div className="text-2xl font-bold text-purple-500">{launchedRigs.length}</div>
-                <div className="text-xs text-gray-500">Rigs Launched</div>
+                <div className="text-2xl font-bold text-purple-500">{launchedCommunities.length}</div>
+                <div className="text-xs text-gray-500">Launched</div>
             </button>
             </div>
           )}
@@ -248,31 +366,40 @@ export default function ProfilePage() {
             {!user ? null : !address ? (
               <div className="flex flex-col items-center justify-center h-32 text-center text-gray-500">
                 <p className="text-lg font-semibold">Wallet not connected</p>
-                <p className="text-sm mt-1">Please connect your wallet to see your rigs</p>
+                <p className="text-sm mt-1">Please connect your wallet to see your communities</p>
               </div>
             ) : isLoading ? (
               <div className="flex flex-col items-center justify-center h-32 text-gray-500">
                 <p className="text-sm">Loading...</p>
               </div>
-            ) : activeTab === "mined" ? (
-              minedRigs.length === 0 ? (
+            ) : activeTab === "collected" ? (
+              collectedCommunities.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-32 text-center text-gray-500">
-                  <p className="text-lg font-semibold">No mining activity yet</p>
-                  <p className="text-sm mt-1">Start mining on the Explore page!</p>
+                  <p className="text-lg font-semibold">No communities yet</p>
+                  <p className="text-sm mt-1">Collect content to join communities!</p>
                 </div>
               ) : (
-                minedRigs.map((rig) => (
-                  <MinedRigCard key={rig.address} rig={rig} />
+                collectedCommunities.map((community) => (
+                  <CommunityCard
+                    key={community.address}
+                    community={{
+                      ...community,
+                      earnedUnit: pendingRewards?.[community.address]?.earnedUnit,
+                      earnedQuote: pendingRewards?.[community.address]?.earnedQuote,
+                    }}
+                    donutUsdPrice={donutUsdPrice}
+                    showRewards={!!pendingRewards?.[community.address]}
+                  />
                 ))
               )
-            ) : launchedRigs.length === 0 ? (
+            ) : launchedCommunities.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-32 text-center text-gray-500">
-                <p className="text-lg font-semibold">No rigs launched yet</p>
-                <p className="text-sm mt-1">Launch your first rig!</p>
+                <p className="text-lg font-semibold">No communities launched</p>
+                <p className="text-sm mt-1">Launch your first community!</p>
               </div>
             ) : (
-              launchedRigs.map((rig) => (
-                <LaunchedRigCard key={rig.address} rig={rig} donutUsdPrice={donutUsdPrice} />
+              launchedCommunities.map((community) => (
+                <LaunchedCommunityCard key={community.address} community={community} donutUsdPrice={donutUsdPrice} />
               ))
             )}
           </div>

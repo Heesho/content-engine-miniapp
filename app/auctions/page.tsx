@@ -2,18 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Flame } from "lucide-react";
-import { formatEther, parseEther, parseUnits, formatUnits, type Address, zeroAddress } from "viem";
+import { formatEther, parseEther, type Address } from "viem";
 import { useReadContracts, useBalance } from "wagmi";
 import { base } from "wagmi/chains";
 
 import { Button } from "@/components/ui/button";
 import { NavBar } from "@/components/nav-bar";
-import { useAllRigAddresses } from "@/hooks/useAllRigs";
+import { useAllCommunityAddresses } from "@/hooks/useAllCommunities";
 import {
   useAllAuctionStates,
   type AuctionListItem,
 } from "@/hooks/useAuctionState";
-import { useRigInfo, useRigState } from "@/hooks/useRigState";
+import { useCommunityInfo, useCommunityState } from "@/hooks/useCommunityState";
 import { useFarcaster } from "@/hooks/useFarcaster";
 import {
   useBatchedTransaction,
@@ -21,9 +21,8 @@ import {
   encodeContractCall,
 } from "@/hooks/useBatchedTransaction";
 import { CONTRACT_ADDRESSES, MULTICALL_ABI, UNIV2_PAIR_ABI, UNIV2_ROUTER_ABI, CORE_ABI, ERC20_ABI } from "@/lib/contracts";
-import { cn, getEthPrice, getDonutPrice } from "@/lib/utils";
+import { cn, getDonutPrice } from "@/lib/utils";
 import {
-  DEFAULT_ETH_PRICE_USD,
   DEFAULT_DONUT_PRICE_USD,
   PRICE_REFETCH_INTERVAL_MS,
   ipfsToHttp,
@@ -59,12 +58,12 @@ const formatEth = (value: bigint, maximumFractionDigits = 4) => {
 
 // LP Pair icon component - shows two overlapping token icons
 function LpPairIcon({
-  rigUri,
+  communityUri,
   tokenSymbol,
   size = "md",
   className
 }: {
-  rigUri?: string;
+  communityUri?: string;
   tokenSymbol?: string;
   size?: "sm" | "md";
   className?: string;
@@ -73,9 +72,9 @@ function LpPairIcon({
 
   // Fetch metadata to get image URL
   useEffect(() => {
-    if (!rigUri) return;
+    if (!communityUri) return;
 
-    const metadataUrl = ipfsToHttp(rigUri);
+    const metadataUrl = ipfsToHttp(communityUri);
     if (!metadataUrl) return;
 
     fetch(metadataUrl)
@@ -88,7 +87,7 @@ function LpPairIcon({
       .catch(() => {
         // Silently fail - will show fallback
       });
-  }, [rigUri]);
+  }, [communityUri]);
 
   const sizes = {
     sm: {
@@ -131,23 +130,16 @@ function LpPairIcon({
 }
 
 
-// WETH icon component - uses real ETH logo
-function WethIcon({ className }: { className?: string }) {
+// USDC icon component
+function UsdcIcon({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "w-8 h-8 rounded-full flex items-center justify-center bg-[#627EEA] overflow-hidden",
+        "w-8 h-8 rounded-full flex items-center justify-center bg-[#2775CA] overflow-hidden",
         className
       )}
     >
-      <svg viewBox="0 0 32 32" className="w-5 h-5" fill="none">
-        <path d="M16 4L16 12.87L23 16.22L16 4Z" fill="white" fillOpacity="0.6"/>
-        <path d="M16 4L9 16.22L16 12.87L16 4Z" fill="white"/>
-        <path d="M16 21.97L16 28L23 17.62L16 21.97Z" fill="white" fillOpacity="0.6"/>
-        <path d="M16 28L16 21.97L9 17.62L16 28Z" fill="white"/>
-        <path d="M16 20.57L23 16.22L16 12.87L16 20.57Z" fill="white" fillOpacity="0.2"/>
-        <path d="M9 16.22L16 20.57L16 12.87L9 16.22Z" fill="white" fillOpacity="0.6"/>
-      </svg>
+      <span className="text-white font-bold text-sm">$</span>
     </div>
   );
 }
@@ -155,32 +147,28 @@ function WethIcon({ className }: { className?: string }) {
 // Auction card component
 function AuctionCard({
   auction,
-  ethUsdPrice,
   donutUsdPrice,
   isSelected,
   onClick,
 }: {
   auction: AuctionListItem;
-  ethUsdPrice: number;
   donutUsdPrice: number;
   isSelected: boolean;
   onClick: () => void;
 }) {
-  const { rigInfo } = useRigInfo(auction.rigAddress);
-  const { rigState } = useRigState(auction.rigAddress, undefined);
+  const { communityInfo } = useCommunityInfo(auction.communityAddress);
+  const { communityState } = useCommunityState(auction.communityAddress, undefined);
 
   // LP price is in DONUT value, convert to USD
   const lpPriceUsd =
     Number(formatEther(auction.auctionState.price)) *
     Number(formatEther(auction.auctionState.paymentTokenPrice)) *
     donutUsdPrice;
-  const wethValueUsd =
-    Number(formatEther(auction.auctionState.wethAccumulated)) * ethUsdPrice;
+  // Quote accumulated is in USDC (6 decimals)
+  const quoteValueUsd = Number(auction.auctionState.quoteAccumulated) / 1e6;
 
-  const tokenSymbol = rigInfo?.tokenSymbol ?? "TOKEN";
-  const rigUri = rigState?.rigUri;
-
-  const isProfitable = wethValueUsd > lpPriceUsd;
+  const tokenSymbol = communityInfo?.tokenSymbol ?? "TOKEN";
+  const communityUri = communityState?.uri;
 
   return (
     <div
@@ -199,7 +187,7 @@ function AuctionCard({
             YOU PAY
           </div>
           <div className="flex items-center gap-1.5 h-6">
-            <LpPairIcon rigUri={rigUri} tokenSymbol={tokenSymbol} />
+            <LpPairIcon communityUri={communityUri} tokenSymbol={tokenSymbol} />
             <span className="text-sm font-bold text-purple-500">
               {formatEth(auction.auctionState.price, 4)}
             </span>
@@ -215,13 +203,13 @@ function AuctionCard({
             YOU RECEIVE
           </div>
           <div className="flex items-center gap-1.5 h-6">
-            <WethIcon className="w-5 h-5" />
+            <UsdcIcon className="w-5 h-5" />
             <span className="text-sm font-bold text-white">
-              {formatEth(auction.auctionState.wethAccumulated, 4)}
+              ${(Number(auction.auctionState.quoteAccumulated) / 1e6).toFixed(2)}
             </span>
           </div>
           <div className="text-[10px] text-gray-500 mt-0.5">
-            WETH (~${wethValueUsd.toFixed(2)})
+            USDC (~${quoteValueUsd.toFixed(2)})
           </div>
         </div>
       </div>
@@ -232,7 +220,6 @@ function AuctionCard({
 type AuctionMode = "buy" | "get";
 
 export default function AuctionsPage() {
-  const [ethUsdPrice, setEthUsdPrice] = useState<number>(DEFAULT_ETH_PRICE_USD);
   const [donutUsdPrice, setDonutUsdPrice] = useState<number>(DEFAULT_DONUT_PRICE_USD);
   const [selectedAuctionAddress, setSelectedAuctionAddress] = useState<`0x${string}` | null>(null);
   const [pendingAuction, setPendingAuction] = useState<AuctionListItem | null>(
@@ -259,37 +246,35 @@ export default function AuctionsPage() {
     reset: resetBatch,
   } = useBatchedTransaction();
 
-  // Get all rig addresses
-  const { addresses: rigAddresses } = useAllRigAddresses();
+  // Get all community addresses
+  const { addresses: communityAddresses } = useAllCommunityAddresses();
 
   // Get all auction states
   const { auctions, isLoading, refetch: refetchAuctions } = useAllAuctionStates(
-    rigAddresses,
+    communityAddresses,
     address
   );
 
-  // Filter out auctions with 0 WETH and sort by profitability
+  // Filter out auctions with 0 USDC and sort by profitability
   const sortedAuctions = useMemo(() => {
     return [...auctions]
-      .filter((auction) => auction.auctionState.wethAccumulated > 0n)
+      .filter((auction) => auction.auctionState.quoteAccumulated > 0n)
       .sort((a, b) => {
       // Calculate USD values for auction A
       const aLpUsd =
         Number(formatEther(a.auctionState.price)) *
         Number(formatEther(a.auctionState.paymentTokenPrice)) *
         donutUsdPrice;
-      const aWethUsd =
-        Number(formatEther(a.auctionState.wethAccumulated)) * ethUsdPrice;
-      const aDiff = aWethUsd - aLpUsd;
+      const aQuoteUsd = Number(a.auctionState.quoteAccumulated) / 1e6;
+      const aDiff = aQuoteUsd - aLpUsd;
 
       // Calculate USD values for auction B
       const bLpUsd =
         Number(formatEther(b.auctionState.price)) *
         Number(formatEther(b.auctionState.paymentTokenPrice)) *
         donutUsdPrice;
-      const bWethUsd =
-        Number(formatEther(b.auctionState.wethAccumulated)) * ethUsdPrice;
-      const bDiff = bWethUsd - bLpUsd;
+      const bQuoteUsd = Number(b.auctionState.quoteAccumulated) / 1e6;
+      const bDiff = bQuoteUsd - bLpUsd;
 
       // Both profitable (positive diff): higher diff is better
       if (aDiff > 0 && bDiff > 0) {
@@ -310,17 +295,13 @@ export default function AuctionsPage() {
       // Both equal (diff = 0): they're equal
       return 0;
     });
-  }, [auctions, ethUsdPrice, donutUsdPrice]);
+  }, [auctions, donutUsdPrice]);
 
 
-  // Fetch ETH and DONUT prices
+  // Fetch DONUT price
   useEffect(() => {
     const fetchPrices = async () => {
-      const [ethPrice, donutPrice] = await Promise.all([
-        getEthPrice(),
-        getDonutPrice(),
-      ]);
-      setEthUsdPrice(ethPrice);
+      const donutPrice = await getDonutPrice();
       setDonutUsdPrice(donutPrice);
     };
     fetchPrices();
@@ -374,7 +355,7 @@ export default function AuctionsPage() {
         MULTICALL_ABI,
         "buy",
         [
-          auction.rigAddress,
+          auction.communityAddress,
           auction.auctionState.epochId,
           deadline,
           auction.auctionState.price,
@@ -395,13 +376,13 @@ export default function AuctionsPage() {
   // Auto-select first auction if none selected
   useEffect(() => {
     if (sortedAuctions.length > 0 && !selectedAuctionAddress) {
-      setSelectedAuctionAddress(sortedAuctions[0].rigAddress);
+      setSelectedAuctionAddress(sortedAuctions[0].communityAddress);
     }
   }, [sortedAuctions, selectedAuctionAddress]);
 
   // Get selected auction
   const selectedAuction = auctions.find(
-    (a) => a.rigAddress === selectedAuctionAddress
+    (a) => a.communityAddress === selectedAuctionAddress
   );
 
   // Calculate values for selected auction
@@ -411,38 +392,37 @@ export default function AuctionsPage() {
       Number(formatEther(selectedAuction.auctionState.paymentTokenPrice)) *
       donutUsdPrice
     : 0;
-  const selectedWethValueUsd = selectedAuction
-    ? Number(formatEther(selectedAuction.auctionState.wethAccumulated)) *
-      ethUsdPrice
+  const selectedQuoteValueUsd = selectedAuction
+    ? Number(selectedAuction.auctionState.quoteAccumulated) / 1e6
     : 0;
-  const selectedProfitLoss = selectedWethValueUsd - selectedLpPriceUsd;
+  const selectedProfitLoss = selectedQuoteValueUsd - selectedLpPriceUsd;
   const hasInsufficientBalance = selectedAuction
     ? selectedAuction.auctionState.paymentTokenBalance <
       selectedAuction.auctionState.price
     : true;
 
-  // Get token symbol and rigUri for selected auction (always call hooks, pass undefined if no selection)
-  const { rigInfo: selectedRigInfo } = useRigInfo(
+  // Get token symbol and communityUri for selected auction (always call hooks, pass undefined if no selection)
+  const { communityInfo: selectedCommunityInfo } = useCommunityInfo(
     selectedAuctionAddress ?? undefined
   );
-  const { rigState: selectedRigState } = useRigState(
+  const { communityState: selectedCommunityState } = useCommunityState(
     selectedAuctionAddress ?? undefined,
     undefined
   );
-  const selectedTokenSymbol = selectedRigInfo?.tokenSymbol ?? "TOKEN";
-  const selectedRigUri = selectedRigState?.rigUri;
+  const selectedTokenSymbol = selectedCommunityInfo?.tokenSymbol ?? "TOKEN";
+  const selectedCommunityUri = selectedCommunityState?.uri;
 
   const isBuying = batchState === "pending" || batchState === "confirming";
 
   // LP Maker: Get UNIT token address for selected auction
   const lpTokenAddress = selectedAuction?.auctionState.paymentToken;
 
-  // Read UNIT address from Core contract (rigToUnit mapping)
+  // Read UNIT address from Core contract (contentToUnit mapping)
   const { data: unitAddressResult } = useReadContracts({
     contracts: selectedAuctionAddress ? [{
       address: CONTRACT_ADDRESSES.core as Address,
       abi: CORE_ABI,
-      functionName: "rigToUnit",
+      functionName: "contentToUnit",
       args: [selectedAuctionAddress],
       chainId: base.id,
     }] : [],
@@ -487,7 +467,6 @@ export default function AuctionsPage() {
   });
 
   const token0 = lpPairInfo?.[0]?.result as Address | undefined;
-  const token1 = lpPairInfo?.[1]?.result as Address | undefined;
   const reserves = lpPairInfo?.[2]?.result as [bigint, bigint, number] | undefined;
   const lpTotalSupply = lpPairInfo?.[3]?.result as bigint | undefined;
 
@@ -674,12 +653,11 @@ export default function AuctionsPage() {
           ) : (
             sortedAuctions.map((auction) => (
               <AuctionCard
-                key={auction.rigAddress}
+                key={auction.communityAddress}
                 auction={auction}
-                ethUsdPrice={ethUsdPrice}
                 donutUsdPrice={donutUsdPrice}
-                isSelected={selectedAuctionAddress === auction.rigAddress}
-                onClick={() => setSelectedAuctionAddress(auction.rigAddress)}
+                isSelected={selectedAuctionAddress === auction.communityAddress}
+                onClick={() => setSelectedAuctionAddress(auction.communityAddress)}
               />
             ))
           )}
@@ -739,7 +717,7 @@ export default function AuctionsPage() {
                         </button>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <LpPairIcon rigUri={selectedRigUri} tokenSymbol={selectedTokenSymbol} />
+                        <LpPairIcon communityUri={selectedCommunityUri} tokenSymbol={selectedTokenSymbol} />
                         <span className="text-lg font-semibold text-white">
                           {formatEth(selectedAuction.auctionState.price, 4)}
                         </span>
@@ -753,7 +731,7 @@ export default function AuctionsPage() {
                     <div className="text-right">
                       <div className="flex items-center justify-end gap-1 text-[10px] text-zinc-500 mb-1">
                         <span>Balance:</span>
-                        <LpPairIcon rigUri={selectedRigUri} tokenSymbol={selectedTokenSymbol} size="sm" />
+                        <LpPairIcon communityUri={selectedCommunityUri} tokenSymbol={selectedTokenSymbol} size="sm" />
                         <span className="text-white font-medium">
                           {formatEth(selectedAuction.auctionState.paymentTokenBalance, 4)}
                         </span>
@@ -811,7 +789,7 @@ export default function AuctionsPage() {
                           className="flex-1 bg-transparent text-xl font-bold text-white focus:outline-none placeholder:text-zinc-600"
                         />
                         <div className="flex items-center gap-2 px-2 py-1 bg-zinc-800 rounded-lg">
-                          <LpPairIcon rigUri={selectedRigUri} tokenSymbol={selectedTokenSymbol} size="sm" />
+                          <LpPairIcon communityUri={selectedCommunityUri} tokenSymbol={selectedTokenSymbol} size="sm" />
                           <span className="text-sm font-medium text-white">{selectedTokenSymbol}</span>
                         </div>
                       </div>
@@ -848,7 +826,7 @@ export default function AuctionsPage() {
                     <div className="flex items-center justify-between px-2 text-xs text-zinc-500">
                       <span>You receive ~</span>
                       <div className="flex items-center gap-1">
-                        <LpPairIcon rigUri={selectedRigUri} tokenSymbol={selectedTokenSymbol} size="sm" />
+                        <LpPairIcon communityUri={selectedCommunityUri} tokenSymbol={selectedTokenSymbol} size="sm" />
                         <span className="text-white font-medium">{formatEth(estimatedLpTokens, 4)}</span>
                         <span>LP tokens</span>
                       </div>
@@ -872,7 +850,7 @@ export default function AuctionsPage() {
                       }
                     >
                       {lpSuccess ? (
-                        "✓ SUCCESS"
+                        "SUCCESS"
                       ) : isCreatingLp ? (
                         <>
                           {lpBatchState === "confirming" ? "CONFIRMING" : "CREATING"}
