@@ -447,7 +447,7 @@ export default function CommunityDetailPage() {
         <div className="px-2 pb-2">
           <div className="relative flex items-center justify-between">
             <Link href="/explore" className="p-1 -ml-1 hover:opacity-70 transition-opacity z-10">
-              <ArrowLeft className="h-5 w-5 text-purple-500" />
+              <ArrowLeft className="h-5 w-5 text-teal-500" />
             </Link>
             {/* Mode Toggle Button */}
             <button
@@ -455,7 +455,7 @@ export default function CommunityDetailPage() {
                 setMode(mode === "feed" ? "trade" : "feed");
                 setTradeAmount("");
               }}
-              className="px-3 py-1.5 rounded-lg bg-purple-500 hover:bg-purple-600 transition-colors text-black text-xs font-semibold z-10 outline-none focus:outline-none"
+              className="px-3 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-black text-xs font-semibold z-10 outline-none focus:outline-none"
             >
               {mode === "feed" ? "Trade" : "Feed"}
             </button>
@@ -478,7 +478,7 @@ export default function CommunityDetailPage() {
               {tokenLogoUrl ? (
                 <img src={tokenLogoUrl} alt={tokenSymbol} className="w-12 h-12 object-cover rounded-xl" />
               ) : (
-                <span className="text-lg font-bold text-purple-500">{tokenSymbol.slice(0, 2)}</span>
+                <span className="text-lg font-bold text-teal-500">{tokenSymbol.slice(0, 2)}</span>
               )}
             </div>
           </div>
@@ -530,7 +530,7 @@ export default function CommunityDetailPage() {
                       {tokenLogoUrl ? (
                         <img src={tokenLogoUrl} alt={tokenSymbol} className="w-4 h-4 rounded-full" />
                       ) : (
-                        <span className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center text-[8px] text-black font-bold">
+                        <span className="w-4 h-4 rounded-full bg-teal-500 flex items-center justify-center text-[8px] text-black font-bold">
                           {tokenSymbol.slice(0, 2)}
                         </span>
                       )}
@@ -547,7 +547,7 @@ export default function CommunityDetailPage() {
                       <button
                         onClick={handleClaim}
                         disabled={claimState === "pending" || claimState === "confirming"}
-                        className="mt-1 flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300"
+                        className="mt-1 flex items-center gap-1 text-[10px] text-teal-400 hover:text-teal-300"
                       >
                         <Coins className="w-3 h-3" />
                         {claimState === "success" ? "Claimed!" : claimState === "pending" || claimState === "confirming" ? "Claiming..." : "Claim"}
@@ -577,7 +577,7 @@ export default function CommunityDetailPage() {
                         {(launcherAddress as string).slice(2, 4).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <span className={`text-xs font-medium text-white ${launcherFid ? "hover:text-purple-400" : ""}`}>
+                    <span className={`text-xs font-medium text-white ${launcherFid ? "hover:text-teal-400" : ""}`}>
                       {launcherDisplayName}
                     </span>
                   </button>
@@ -622,7 +622,7 @@ export default function CommunityDetailPage() {
                 className={cn(
                   "w-full py-3 rounded-lg font-semibold transition-all text-sm flex items-center justify-center gap-2",
                   isConnected
-                    ? "bg-purple-500 text-black hover:bg-purple-600 active:scale-[0.98]"
+                    ? "bg-teal-500 text-black hover:bg-teal-600 active:scale-[0.98]"
                     : "bg-zinc-700 text-gray-400 cursor-not-allowed"
                 )}
               >
@@ -659,7 +659,7 @@ export default function CommunityDetailPage() {
                       ) : tokenLogoUrl ? (
                         <img src={tokenLogoUrl} alt={tokenSymbol} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-xs font-bold text-purple-500">{tokenSymbol.slice(0, 2)}</span>
+                        <span className="text-xs font-bold text-teal-500">{tokenSymbol.slice(0, 2)}</span>
                       )}
                     </div>
                     <input
@@ -710,7 +710,7 @@ export default function CommunityDetailPage() {
                         tokenLogoUrl ? (
                           <img src={tokenLogoUrl} alt={tokenSymbol} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-xs font-bold text-purple-500">{tokenSymbol.slice(0, 2)}</span>
+                          <span className="text-xs font-bold text-teal-500">{tokenSymbol.slice(0, 2)}</span>
                         )
                       ) : (
                         <img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" alt="ETH" className="w-full h-full object-cover" />
@@ -762,7 +762,7 @@ export default function CommunityDetailPage() {
                   onClick={handleTrade}
                   disabled={!canTrade || isTradePending || tradeResult !== null}
                   className={cn(
-                    "w-full py-3 rounded-lg font-semibold transition-all text-sm bg-purple-500 text-black hover:bg-purple-600",
+                    "w-full py-3 rounded-lg font-semibold transition-all text-sm bg-teal-500 text-black hover:bg-teal-600",
                     (!canTrade || isTradePending || tradeResult !== null) && "cursor-not-allowed",
                     (!canTrade || isTradePending) && tradeResult === null && "opacity-40"
                   )}

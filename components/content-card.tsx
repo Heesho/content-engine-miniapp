@@ -99,7 +99,7 @@ export function ContentCard({
           {isLong && (
             <button
               onClick={() => setExpanded(!expanded)}
-              className="text-purple-500 text-sm mt-2 hover:text-purple-400"
+              className="text-teal-500 text-sm mt-2 hover:text-teal-400"
             >
               {expanded ? "Show less" : "Read more"}
             </button>
@@ -130,7 +130,7 @@ export function ContentCard({
             </div>
           )}
           <div className="p-3">
-            <div className="flex items-center gap-2 text-purple-500 text-sm mb-1">
+            <div className="flex items-center gap-2 text-teal-500 text-sm mb-1">
               <ExternalLink className="w-3 h-3" />
               {new URL(metadata.link).hostname}
             </div>

@@ -79,7 +79,7 @@ export function CommunityCard({
               className="w-12 h-12 object-cover rounded-xl"
             />
           ) : (
-            <span className="text-purple-500 font-bold text-lg">
+            <span className="text-teal-500 font-bold text-lg">
               {community.tokenSymbol.slice(0, 2)}
             </span>
           )}
@@ -95,7 +95,7 @@ export function CommunityCard({
 
         {/* Content Count & Price */}
         <div className="flex-shrink-0 text-right">
-          <div className="text-sm font-semibold text-purple-500">
+          <div className="text-sm font-semibold text-teal-500">
             {community.totalContent.toString()} posts
           </div>
           <div className="text-xs text-gray-500">

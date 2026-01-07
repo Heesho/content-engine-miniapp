@@ -118,11 +118,11 @@ function LpPairIcon({
             className="w-full h-full object-cover"
           />
         ) : (
-          <span className={cn(s.fallbackText, "font-bold text-purple-500")}>{fallbackLetter}</span>
+          <span className={cn(s.fallbackText, "font-bold text-teal-500")}>{fallbackLetter}</span>
         )}
       </div>
       {/* DONUT token (right/back) - donut shape, behind unit */}
-      <div className={cn(s.donut, "rounded-full bg-purple-500 flex items-center justify-center z-[1]")}>
+      <div className={cn(s.donut, "rounded-full bg-teal-500 flex items-center justify-center z-[1]")}>
         <div className={cn(s.donutHole, "rounded-full bg-black")} />
       </div>
     </div>
@@ -176,7 +176,7 @@ function AuctionCard({
       className={cn(
         "relative rounded-xl p-3 cursor-pointer transition-all bg-zinc-900 mb-1.5",
         isSelected
-          ? "ring-2 ring-purple-500 shadow-[0_0_15px_rgba(160,111,255,0.3)]"
+          ? "ring-2 ring-teal-500 shadow-[0_0_15px_rgba(160,111,255,0.3)]"
           : "ring-1 ring-zinc-800 hover:ring-zinc-700"
       )}
     >
@@ -188,7 +188,7 @@ function AuctionCard({
           </div>
           <div className="flex items-center gap-1.5 h-6">
             <LpPairIcon communityUri={communityUri} tokenSymbol={tokenSymbol} />
-            <span className="text-sm font-bold text-purple-500">
+            <span className="text-sm font-bold text-teal-500">
               {formatEth(auction.auctionState.price, 4)}
             </span>
           </div>
@@ -636,7 +636,7 @@ export default function AuctionsPage() {
           <h1 className="text-2xl font-bold tracking-wide">AUCTIONS</h1>
           <button
             onClick={() => setMode(mode === "buy" ? "get" : "buy")}
-            className="px-3 py-1.5 rounded-lg bg-purple-500 hover:bg-purple-600 transition-colors text-black text-xs font-semibold"
+            className="px-3 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-black text-xs font-semibold"
           >
             {mode === "buy" ? "GET" : "BUY"}
           </button>
@@ -711,7 +711,7 @@ export default function AuctionsPage() {
                         <span>Auction price</span>
                         <button
                           onClick={() => setMode("get")}
-                          className="text-purple-500 hover:text-purple-400"
+                          className="text-teal-500 hover:text-teal-400"
                         >
                           Get LP
                         </button>
@@ -737,7 +737,7 @@ export default function AuctionsPage() {
                         </span>
                       </div>
                       <Button
-                        className="w-[calc(50vw-16px)] max-w-[244px] py-2.5 text-sm font-semibold rounded-lg bg-purple-500 hover:bg-purple-600 text-black"
+                        className="w-[calc(50vw-16px)] max-w-[244px] py-2.5 text-sm font-semibold rounded-lg bg-teal-500 hover:bg-teal-600 text-black"
                         onClick={() => selectedAuction && handleBuy(selectedAuction)}
                         disabled={isBuying || hasInsufficientBalance}
                       >
@@ -773,7 +773,7 @@ export default function AuctionsPage() {
                           </span>
                           <button
                             onClick={() => userUnitBalance?.value && setLpUnitAmount(formatEther(userUnitBalance.value))}
-                            className="text-purple-500 hover:text-purple-400 ml-1"
+                            className="text-teal-500 hover:text-teal-400 ml-1"
                           >
                             MAX
                           </button>
@@ -814,7 +814,7 @@ export default function AuctionsPage() {
                           {requiredDonut > 0n ? formatEth(requiredDonut, 2) : "0.0"}
                         </span>
                         <div className="flex items-center gap-2 px-2 py-1 bg-zinc-800 rounded-lg">
-                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                          <div className="w-4 h-4 rounded-full bg-teal-500 flex items-center justify-center">
                             <div className="w-1.5 h-1.5 rounded-full bg-black" />
                           </div>
                           <span className="text-sm font-medium text-white">DONUT</span>
@@ -835,10 +835,10 @@ export default function AuctionsPage() {
                     {/* Create LP Button */}
                     <Button
                       className={cn(
-                        "w-full py-3 text-sm font-semibold rounded-lg text-black disabled:bg-purple-500/50 disabled:cursor-not-allowed",
+                        "w-full py-3 text-sm font-semibold rounded-lg text-black disabled:bg-teal-500/50 disabled:cursor-not-allowed",
                         lpSuccess
                           ? "bg-green-500 hover:bg-green-500"
-                          : "bg-purple-500 hover:bg-purple-600"
+                          : "bg-teal-500 hover:bg-teal-600"
                       )}
                       onClick={handleCreateLp}
                       disabled={

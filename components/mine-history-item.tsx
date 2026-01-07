@@ -50,7 +50,7 @@ export const MineHistoryItem = memo(function MineHistoryItem({
         <button
           onClick={handleProfileClick}
           disabled={!fid}
-          className={`text-xs text-zinc-400 ${fid ? "hover:text-purple-400 cursor-pointer" : "cursor-default"}`}
+          className={`text-xs text-zinc-400 ${fid ? "hover:text-teal-400 cursor-pointer" : "cursor-default"}`}
         >
           {displayName}
         </button>

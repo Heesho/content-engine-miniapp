@@ -43,7 +43,7 @@ export function CollectButton({
           : "px-3 py-1.5 text-sm",
         disabled || isLoading
           ? "bg-zinc-700 text-gray-400 cursor-not-allowed"
-          : "bg-purple-600 hover:bg-purple-500 text-white active:scale-95",
+          : "bg-teal-600 hover:bg-teal-500 text-white active:scale-95",
         className
       )}
     >
@@ -65,7 +65,7 @@ export function CollectButton({
 // Variant that shows just the price (for compact displays)
 export function CollectPriceBadge({ price }: { price: bigint }) {
   return (
-    <div className="inline-flex items-center gap-1 px-2 py-1 bg-purple-600/20 text-purple-400 rounded-md text-sm font-medium">
+    <div className="inline-flex items-center gap-1 px-2 py-1 bg-teal-600/20 text-teal-400 rounded-md text-sm font-medium">
       <span>{formatUsdc(price)}</span>
     </div>
   );

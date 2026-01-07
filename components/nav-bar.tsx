@@ -26,7 +26,7 @@ export function NavBar() {
           className={cn(
             "flex items-center justify-center p-2.5 transition-colors rounded-full",
             pathname === "/explore" || isCommunityPage
-              ? "text-purple-500"
+              ? "text-teal-500"
               : "text-gray-500 hover:text-gray-300"
           )}
         >
@@ -39,7 +39,7 @@ export function NavBar() {
           className={cn(
             "flex items-center justify-center p-2.5 transition-colors rounded-full",
             pathname === "/auctions"
-              ? "text-purple-500"
+              ? "text-teal-500"
               : "text-gray-500 hover:text-gray-300"
           )}
         >
@@ -50,9 +50,9 @@ export function NavBar() {
         <Link
           href="/launch"
           className={cn(
-            "flex items-center justify-center p-3 transition-colors rounded-full bg-purple-500/20",
+            "flex items-center justify-center p-3 transition-colors rounded-full bg-teal-500/20",
             pathname === "/launch"
-              ? "text-purple-500"
+              ? "text-teal-500"
               : "text-gray-500 hover:text-gray-300"
           )}
         >
@@ -65,7 +65,7 @@ export function NavBar() {
           className={cn(
             "flex items-center justify-center p-2.5 transition-colors rounded-full",
             pathname === "/info"
-              ? "text-purple-500"
+              ? "text-teal-500"
               : "text-gray-500 hover:text-gray-300"
           )}
         >
@@ -78,7 +78,7 @@ export function NavBar() {
           className={cn(
             "flex items-center justify-center p-2.5 transition-colors rounded-full",
             pathname === "/profile"
-              ? "text-purple-500"
+              ? "text-teal-500"
               : "text-gray-500 hover:text-gray-300"
           )}
         >

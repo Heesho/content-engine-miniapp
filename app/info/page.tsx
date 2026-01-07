@@ -63,7 +63,7 @@ export default function InfoPage() {
 
           <div className="space-y-6 px-2 overflow-y-auto scrollbar-hide flex-1">
             <section>
-              <h2 className="text-lg font-bold text-purple-500 mb-2">
+              <h2 className="text-lg font-bold text-teal-500 mb-2">
                 What Is Franchiser?
               </h2>
               <p className="text-sm text-gray-300 mb-2">
@@ -77,7 +77,7 @@ export default function InfoPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-purple-500 mb-2">
+              <h2 className="text-lg font-bold text-teal-500 mb-2">
                 How Mining Works
               </h2>
               <p className="text-sm text-gray-300 mb-2">
@@ -93,7 +93,7 @@ export default function InfoPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-purple-500 mb-2">
+              <h2 className="text-lg font-bold text-teal-500 mb-2">
                 Why It's Fair
               </h2>
               <p className="text-sm text-gray-300 mb-2">
@@ -108,7 +108,7 @@ export default function InfoPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-purple-500 mb-2">
+              <h2 className="text-lg font-bold text-teal-500 mb-2">
                 Fee Split
               </h2>
               <p className="text-sm text-gray-300 mb-2">
@@ -123,7 +123,7 @@ export default function InfoPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-purple-500 mb-2">
+              <h2 className="text-lg font-bold text-teal-500 mb-2">
                 Franchise Customization
               </h2>
               <p className="text-sm text-gray-300 mb-2">
@@ -140,7 +140,7 @@ export default function InfoPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-purple-500 mb-2">
+              <h2 className="text-lg font-bold text-teal-500 mb-2">
                 How It Benefits $DONUT
               </h2>
               <p className="text-sm text-gray-300 mb-2">
@@ -155,7 +155,7 @@ export default function InfoPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-purple-500 mb-2">
+              <h2 className="text-lg font-bold text-teal-500 mb-2">
                 Token Emission
               </h2>
               <p className="text-sm text-gray-300 mb-2">
@@ -170,7 +170,7 @@ export default function InfoPage() {
             </section>
 
             <section className="pb-4">
-              <h2 className="text-lg font-bold text-purple-500 mb-2">
+              <h2 className="text-lg font-bold text-teal-500 mb-2">
                 Permanent Liquidity
               </h2>
               <p className="text-sm text-gray-300 mb-2">

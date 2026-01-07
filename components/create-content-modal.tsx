@@ -212,7 +212,7 @@ export function CreateContentModal({
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors",
                   contentType === type
-                    ? "bg-purple-600 text-white"
+                    ? "bg-teal-600 text-white"
                     : "bg-zinc-800 text-gray-400 hover:bg-zinc-700"
                 )}
               >
@@ -255,7 +255,7 @@ export function CreateContentModal({
               ) : (
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full aspect-video bg-zinc-800 rounded-lg border-2 border-dashed border-zinc-700 hover:border-purple-500 transition-colors flex flex-col items-center justify-center gap-2"
+                  className="w-full aspect-video bg-zinc-800 rounded-lg border-2 border-dashed border-zinc-700 hover:border-teal-500 transition-colors flex flex-col items-center justify-center gap-2"
                 >
                   <Upload className="w-8 h-8 text-gray-500" />
                   <span className="text-gray-500">
@@ -274,7 +274,7 @@ export function CreateContentModal({
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
                 placeholder="What's on your mind?"
-                className="w-full h-48 bg-zinc-800 rounded-lg p-3 text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full h-48 bg-zinc-800 rounded-lg p-3 text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-teal-500"
                 maxLength={2000}
               />
               <div className="text-right text-sm text-gray-500 mt-1">
@@ -294,7 +294,7 @@ export function CreateContentModal({
                   fetchLinkPreview(e.target.value);
                 }}
                 placeholder="https://example.com"
-                className="w-full bg-zinc-800 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full bg-zinc-800 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
               {isLoadingPreview && (
                 <div className="flex items-center gap-2 text-gray-500">
@@ -338,7 +338,7 @@ export function CreateContentModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add a description..."
-              className="w-full bg-zinc-800 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full bg-zinc-800 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
               maxLength={280}
             />
           </div>
@@ -376,7 +376,7 @@ export function CreateContentModal({
               state === "confirming" ||
               state === "success"
                 ? "bg-zinc-700 text-gray-400 cursor-not-allowed"
-                : "bg-purple-600 hover:bg-purple-500 text-white"
+                : "bg-teal-600 hover:bg-teal-500 text-white"
             )}
           >
             {state === "uploading" && (

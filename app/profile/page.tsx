@@ -84,7 +84,7 @@ function CommunityCard({ community, donutUsdPrice, showRewards }: {
               className="w-12 h-12 object-cover rounded-xl"
             />
           ) : (
-            <span className="text-purple-500 font-bold text-lg">
+            <span className="text-teal-500 font-bold text-lg">
               {community.tokenSymbol.slice(0, 2)}
             </span>
           )}
@@ -109,7 +109,7 @@ function CommunityCard({ community, donutUsdPrice, showRewards }: {
             </>
           ) : (
             <>
-              <div className="text-sm font-semibold text-purple-500">
+              <div className="text-sm font-semibold text-teal-500">
                 {community.unitBalance ? formatTokenAmount(community.unitBalance) : "0"}
               </div>
               <div className="text-xs text-gray-500">
@@ -173,7 +173,7 @@ function LaunchedCommunityCard({ community, donutUsdPrice }: {
               className="w-12 h-12 object-cover rounded-xl"
             />
           ) : (
-            <span className="text-purple-500 font-bold text-lg">
+            <span className="text-teal-500 font-bold text-lg">
               {community.tokenSymbol.slice(0, 2)}
             </span>
           )}
@@ -187,7 +187,7 @@ function LaunchedCommunityCard({ community, donutUsdPrice }: {
           </div>
         </div>
         <div className="flex-shrink-0 text-right">
-          <div className="text-sm font-semibold text-purple-500">
+          <div className="text-sm font-semibold text-teal-500">
             {formatUsd(marketCapUsd)} mcap
           </div>
           <div className="text-xs text-gray-500">
@@ -362,7 +362,7 @@ export default function ProfilePage() {
           {/* User Info */}
           {user ? (
             <div className="flex items-center gap-3 mb-4 px-1">
-              <Avatar className="h-14 w-14 border-2 border-purple-500">
+              <Avatar className="h-14 w-14 border-2 border-teal-500">
                 <AvatarImage
                   src={userAvatarUrl || undefined}
                   alt={userDisplayName}
@@ -425,7 +425,7 @@ export default function ProfilePage() {
                   <button
                     onClick={handleMintDonut}
                     disabled={isDonutPending || isDonutConfirming}
-                    className="w-full py-1.5 rounded-md bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-1.5 rounded-md bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isDonutSuccess ? "Minted!" : isDonutPending || isDonutConfirming ? "Minting..." : "Mint 10,000"}
                   </button>
@@ -462,11 +462,11 @@ export default function ProfilePage() {
                 className={cn(
                   "p-3 rounded-xl text-center transition-colors",
                   activeTab === "collected"
-                    ? "bg-purple-500/20 ring-2 ring-purple-500"
+                    ? "bg-teal-500/20 ring-2 ring-teal-500"
                     : "bg-zinc-900 hover:bg-zinc-800"
                 )}
               >
-                <div className="text-2xl font-bold text-purple-500">{collectedCommunities.length}</div>
+                <div className="text-2xl font-bold text-teal-500">{collectedCommunities.length}</div>
                 <div className="text-xs text-gray-500">Communities</div>
               </button>
               <button
@@ -474,11 +474,11 @@ export default function ProfilePage() {
                 className={cn(
                   "p-3 rounded-xl text-center transition-colors",
                   activeTab === "launched"
-                    ? "bg-purple-500/20 ring-2 ring-purple-500"
+                    ? "bg-teal-500/20 ring-2 ring-teal-500"
                     : "bg-zinc-900 hover:bg-zinc-800"
                 )}
               >
-                <div className="text-2xl font-bold text-purple-500">{launchedCommunities.length}</div>
+                <div className="text-2xl font-bold text-teal-500">{launchedCommunities.length}</div>
                 <div className="text-xs text-gray-500">Launched</div>
             </button>
             </div>

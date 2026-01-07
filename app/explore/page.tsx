@@ -99,7 +99,7 @@ export default function ExplorePage() {
                 className={cn(
                   "flex-1 py-1.5 px-3 rounded-lg text-sm font-semibold transition-colors",
                   sortBy === option.value
-                    ? "bg-purple-500 text-black"
+                    ? "bg-teal-500 text-black"
                     : "bg-zinc-900 text-gray-400 hover:text-white"
                 )}
               >

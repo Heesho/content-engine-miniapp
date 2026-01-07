@@ -506,7 +506,7 @@ export default function LaunchPage() {
               <div className="flex-1">
                 <div className="text-xs text-zinc-500 mb-1">Launch fee</div>
                 <div className="flex items-center gap-1.5">
-                  <span className="inline-block w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
+                  <span className="inline-block w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
                     <span className="w-2 h-2 rounded-full bg-black" />
                   </span>
                   <span className="text-lg font-semibold text-white">1,000</span>
@@ -518,7 +518,7 @@ export default function LaunchPage() {
               <div className="text-right">
                 <div className="flex items-center justify-end gap-1 text-[10px] text-zinc-500 mb-1">
                   <span>Balance:</span>
-                  <span className="inline-block w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                  <span className="inline-block w-4 h-4 rounded-full bg-teal-500 flex items-center justify-center">
                     <span className="w-1.5 h-1.5 rounded-full bg-black" />
                   </span>
                   <span className="text-white font-medium">
@@ -530,7 +530,7 @@ export default function LaunchPage() {
                   </span>
                 </div>
                 <Button
-                  className="w-[calc(50vw-16px)] max-w-[244px] py-2.5 text-sm font-semibold rounded-lg bg-purple-500 hover:bg-purple-600 text-black transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                  className="w-[calc(50vw-16px)] max-w-[244px] py-2.5 text-sm font-semibold rounded-lg bg-teal-500 hover:bg-teal-600 text-black transition-all disabled:cursor-not-allowed disabled:opacity-40"
                   onClick={handleLaunch}
                   disabled={isLaunchDisabled}
                 >
@@ -557,8 +557,8 @@ export default function LaunchPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="bg-zinc-900 rounded-2xl p-6 mx-4 max-w-sm w-full text-center">
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center">
-                <PartyPopper className="w-8 h-8 text-purple-400" />
+              <div className="w-16 h-16 rounded-full bg-teal-500/20 flex items-center justify-center">
+                <PartyPopper className="w-8 h-8 text-teal-400" />
               </div>
             </div>
             <h2 className="text-xl font-bold mb-2">Community Launched!</h2>
@@ -574,7 +574,7 @@ export default function LaunchPage() {
                     appUrl: window.location.origin,
                   });
                 }}
-                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-purple-500 text-black font-semibold hover:bg-purple-400 transition-colors"
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-teal-500 text-black font-semibold hover:bg-teal-400 transition-colors"
               >
                 <Share2 className="w-4 h-4" />
                 Share on Farcaster

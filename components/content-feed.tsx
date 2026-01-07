@@ -84,7 +84,7 @@ export function ContentFeed({ contentAddress, userAddress }: ContentFeedProps) {
   if (isLoading && offset === 0) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+        <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
       </div>
     );
   }
