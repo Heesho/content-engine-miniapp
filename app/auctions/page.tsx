@@ -157,7 +157,7 @@ function AuctionCard({
   onClick: () => void;
 }) {
   const { communityInfo } = useCommunityInfo(auction.communityAddress);
-  const { communityState } = useCommunityState(auction.communityAddress, undefined);
+  const { unitState } = useCommunityState(auction.communityAddress, undefined);
 
   // LP price is in DONUT value, convert to USD
   const lpPriceUsd =
@@ -168,7 +168,7 @@ function AuctionCard({
   const quoteValueUsd = Number(auction.auctionState.quoteAccumulated) / 1e6;
 
   const tokenSymbol = communityInfo?.tokenSymbol ?? "TOKEN";
-  const communityUri = communityState?.uri;
+  const communityUri = unitState?.uri;
 
   return (
     <div
@@ -405,12 +405,12 @@ export default function AuctionsPage() {
   const { communityInfo: selectedCommunityInfo } = useCommunityInfo(
     selectedAuctionAddress ?? undefined
   );
-  const { communityState: selectedCommunityState } = useCommunityState(
+  const { unitState: selectedUnitState } = useCommunityState(
     selectedAuctionAddress ?? undefined,
     undefined
   );
   const selectedTokenSymbol = selectedCommunityInfo?.tokenSymbol ?? "TOKEN";
-  const selectedCommunityUri = selectedCommunityState?.uri;
+  const selectedCommunityUri = selectedUnitState?.uri;
 
   const isBuying = batchState === "pending" || batchState === "confirming";
 
