@@ -6,7 +6,7 @@ import {
   CORE_ABI,
   MULTICALL_ABI,
   ERC20_ABI,
-  type ContentState,
+  type UnitState,
 } from "@/lib/contracts";
 
 export type CommunityListItem = {
@@ -19,7 +19,6 @@ export type CommunityListItem = {
   totalContent: bigint;
   unitPrice: bigint;
   totalSupply: bigint;
-  minInitPrice: bigint;
   isModerated: boolean;
   unitBalance?: bigint; // User's balance of unit tokens
 };
@@ -89,7 +88,7 @@ export function useCommunityStates(
   const contracts = communityAddresses.map((address) => ({
     address: CONTRACT_ADDRESSES.multicall as `0x${string}`,
     abi: MULTICALL_ABI,
-    functionName: "getContent" as const,
+    functionName: "getUnitState" as const,
     args: [address, account ?? zeroAddress] as const,
     chainId: base.id,
   }));
@@ -105,7 +104,7 @@ export function useCommunityStates(
   const communityStates = states
     ?.map((result, index) => ({
       address: communityAddresses[index],
-      state: result.result as ContentState | undefined,
+      state: result.result as UnitState | undefined,
     }))
     .filter((item) => item.state);
 
@@ -234,11 +233,10 @@ export function useExploreCommunities(
       uri: onChainState?.uri ?? "",
       launcher: info?.launcher ?? onChainState?.launcher ?? zeroAddress,
       totalContent: onChainState?.totalSupply ?? 0n,
-      unitPrice: onChainState?.unitPrice ?? 0n,
+      unitPrice: onChainState?.priceInDonut ?? 0n,
       totalSupply: onChainState?.totalSupply ?? 0n,
-      minInitPrice: onChainState?.minInitPrice ?? 0n,
       isModerated: onChainState?.isModerated ?? false,
-      unitBalance: onChainState?.unitBalance,
+      unitBalance: onChainState?.accountUnitBalance,
     };
   });
 

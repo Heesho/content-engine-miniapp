@@ -99,9 +99,7 @@ export function CommunityCard({
             {community.totalContent.toString()} posts
           </div>
           <div className="text-xs text-gray-500">
-            {community.minInitPrice > 0n
-              ? `${formatUsdc(community.minInitPrice)} min`
-              : formatUsd(unitPriceUsd)}
+            {formatUsd(unitPriceUsd)}
           </div>
         </div>
       </div>

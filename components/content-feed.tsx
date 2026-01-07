@@ -42,7 +42,7 @@ export function ContentFeed({ contentAddress, userAddress }: ContentFeedProps) {
   const { getDisplayName, profiles } = useBatchProfiles(uniqueAddresses);
 
   // Batch fetch metadata
-  const tokenUris = displayPieces.map((p) => p.tokenUri).filter(Boolean);
+  const tokenUris = displayPieces.map((p) => p.uri).filter(Boolean);
   const { metadataMap } = useContentMetadataBatch(tokenUris);
 
   // Collect hook
@@ -118,7 +118,7 @@ export function ContentFeed({ contentAddress, userAddress }: ContentFeedProps) {
       {displayPieces.map((piece) => {
         const creatorProfile = profiles[piece.creator.toLowerCase()];
         const ownerProfile = profiles[piece.owner.toLowerCase()];
-        const metadata = metadataMap[piece.tokenUri];
+        const metadata = metadataMap[piece.uri];
 
         return (
           <ContentCard

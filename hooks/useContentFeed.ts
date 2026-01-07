@@ -5,12 +5,12 @@ import {
   CONTRACT_ADDRESSES,
   MULTICALL_ABI,
   CONTENT_ABI,
-  type TokenState,
+  type ContentState,
   type ContentMetadata,
 } from "@/lib/contracts";
 import { ipfsToHttp } from "@/lib/constants";
 
-export type ContentPiece = TokenState & {
+export type ContentPiece = ContentState & {
   contentAddress: `0x${string}`;
   metadata?: ContentMetadata;
 };
@@ -64,7 +64,7 @@ export function useContentTokenIds(
   };
 }
 
-// Hook to get content pieces by token IDs using batched Multicall.getToken()
+// Hook to get content pieces by token IDs using batched Multicall.getContentState()
 export function useContentPieces(
   contentAddress: `0x${string}` | undefined,
   tokenIds: number[]
@@ -72,12 +72,12 @@ export function useContentPieces(
   const contracts = tokenIds.map((tokenId) => ({
     address: CONTRACT_ADDRESSES.multicall as `0x${string}`,
     abi: MULTICALL_ABI,
-    functionName: "getToken" as const,
+    functionName: "getContentState" as const,
     args: [contentAddress!, BigInt(tokenId)] as const,
     chainId: base.id,
   }));
 
-  const { data: tokenStates, isLoading, error, refetch } = useReadContracts({
+  const { data: contentStates, isLoading, error, refetch } = useReadContracts({
     contracts,
     query: {
       enabled: !!contentAddress && tokenIds.length > 0,
@@ -85,9 +85,9 @@ export function useContentPieces(
     },
   });
 
-  const pieces: ContentPiece[] = (tokenStates ?? [])
+  const pieces: ContentPiece[] = (contentStates ?? [])
     .map((result, index) => {
-      const state = result.result as TokenState | undefined;
+      const state = result.result as ContentState | undefined;
       if (!state) return null;
       return {
         ...state,
@@ -109,10 +109,10 @@ export function useContentPiece(
   contentAddress: `0x${string}` | undefined,
   tokenId: bigint | undefined
 ) {
-  const { data: rawTokenState, isLoading, error, refetch } = useReadContract({
+  const { data: rawContentState, isLoading, error, refetch } = useReadContract({
     address: CONTRACT_ADDRESSES.multicall as `0x${string}`,
     abi: MULTICALL_ABI,
-    functionName: "getToken",
+    functionName: "getContentState",
     args: contentAddress && tokenId ? [contentAddress, tokenId] : undefined,
     chainId: base.id,
     query: {
@@ -121,11 +121,11 @@ export function useContentPiece(
     },
   });
 
-  const tokenState = rawTokenState as TokenState | undefined;
+  const contentState = rawContentState as ContentState | undefined;
 
-  const piece: ContentPiece | undefined = tokenState
+  const piece: ContentPiece | undefined = contentState
     ? {
-        ...tokenState,
+        ...contentState,
         contentAddress: contentAddress!,
       }
     : undefined;

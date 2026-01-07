@@ -6,9 +6,7 @@ import {
   MULTICALL_ABI,
   CORE_ABI,
   ERC20_ABI,
-  type ContentState,
-  type MinterState,
-  type RewarderState,
+  type UnitState,
 } from "@/lib/contracts";
 
 export type CommunityInfo = {
@@ -23,15 +21,15 @@ export type CommunityInfo = {
   tokenSymbol: string;
 };
 
-// Hook to get community state from Multicall.getContent()
+// Hook to get community state from Multicall.getUnitState()
 export function useCommunityState(
   contentAddress: `0x${string}` | undefined,
   account: `0x${string}` | undefined
 ) {
-  const { data: rawContentState, refetch, isLoading, error } = useReadContract({
+  const { data: rawUnitState, refetch, isLoading, error } = useReadContract({
     address: CONTRACT_ADDRESSES.multicall as `0x${string}`,
     abi: MULTICALL_ABI,
-    functionName: "getContent",
+    functionName: "getUnitState",
     args: contentAddress ? [contentAddress, account ?? zeroAddress] : undefined,
     chainId: base.id,
     query: {
@@ -40,61 +38,10 @@ export function useCommunityState(
     },
   });
 
-  const communityState = rawContentState as ContentState | undefined;
+  const unitState = rawUnitState as UnitState | undefined;
 
   return {
-    communityState,
-    refetch,
-    isLoading,
-    error,
-  };
-}
-
-// Hook to get minter state
-export function useMinterState(contentAddress: `0x${string}` | undefined) {
-  const { data: rawMinterState, refetch, isLoading, error } = useReadContract({
-    address: CONTRACT_ADDRESSES.multicall as `0x${string}`,
-    abi: MULTICALL_ABI,
-    functionName: "getMinter",
-    args: contentAddress ? [contentAddress] : undefined,
-    chainId: base.id,
-    query: {
-      enabled: !!contentAddress,
-      refetchInterval: 30_000,
-    },
-  });
-
-  const minterState = rawMinterState as MinterState | undefined;
-
-  return {
-    minterState,
-    refetch,
-    isLoading,
-    error,
-  };
-}
-
-// Hook to get rewarder state for an account
-export function useRewarderState(
-  contentAddress: `0x${string}` | undefined,
-  account: `0x${string}` | undefined
-) {
-  const { data: rawRewarderState, refetch, isLoading, error } = useReadContract({
-    address: CONTRACT_ADDRESSES.multicall as `0x${string}`,
-    abi: MULTICALL_ABI,
-    functionName: "getRewarder",
-    args: contentAddress ? [contentAddress, account ?? zeroAddress] : undefined,
-    chainId: base.id,
-    query: {
-      enabled: !!contentAddress,
-      refetchInterval: 10_000,
-    },
-  });
-
-  const rewarderState = rawRewarderState as RewarderState | undefined;
-
-  return {
-    rewarderState,
+    unitState,
     refetch,
     isLoading,
     error,

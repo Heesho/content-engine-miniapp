@@ -5,7 +5,7 @@ import { base } from "wagmi/chains";
 import {
   CONTRACT_ADDRESSES,
   MULTICALL_ABI,
-  type RewarderState,
+  type UnitState,
 } from "@/lib/contracts";
 import { DEFAULT_CHAIN_ID } from "@/lib/constants";
 
@@ -68,6 +68,7 @@ export function useClaimRewards(): UseClaimRewardsReturn {
 
 /**
  * Hook to get pending rewards across multiple communities.
+ * Uses getUnitState which includes accountUnitEarned and accountContentStaked.
  */
 export function useAllPendingRewards(
   communityAddresses: `0x${string}`[],
@@ -76,12 +77,12 @@ export function useAllPendingRewards(
   const contracts = communityAddresses.map((address) => ({
     address: CONTRACT_ADDRESSES.multicall as `0x${string}`,
     abi: MULTICALL_ABI,
-    functionName: "getRewarder" as const,
+    functionName: "getUnitState" as const,
     args: [address, account ?? zeroAddress] as const,
     chainId: base.id,
   }));
 
-  const { data: rewarderStates, isLoading, error, refetch } = useReadContracts({
+  const { data: unitStates, isLoading, error, refetch } = useReadContracts({
     contracts,
     query: {
       enabled: communityAddresses.length > 0 && !!account,
@@ -89,16 +90,16 @@ export function useAllPendingRewards(
     },
   });
 
-  const rewards = (rewarderStates ?? [])
+  const rewards = (unitStates ?? [])
     .map((result, index) => {
-      const state = result.result as RewarderState | undefined;
+      const state = result.result as UnitState | undefined;
       if (!state) return null;
 
       return {
         contentAddress: communityAddresses[index],
-        earnedUnit: state.earnedUnit,
-        earnedQuote: state.earnedQuote,
-        accountBalance: state.accountBalance,
+        earnedUnit: state.accountUnitEarned,
+        earnedQuote: 0n, // No longer available in new contract
+        accountBalance: state.accountContentStaked,
         totalSupply: state.totalSupply,
       };
     })
@@ -111,7 +112,7 @@ export function useAllPendingRewards(
 
   // Filter to only communities with pending rewards
   const communitiesWithRewards = rewards.filter(
-    (r) => r.earnedUnit > 0n || r.earnedQuote > 0n
+    (r) => r.earnedUnit > 0n
   );
 
   // Create a map of community address to rewards for easy lookup

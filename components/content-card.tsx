@@ -57,16 +57,16 @@ export function ContentCard({
       return;
     }
 
-    if (!piece.tokenUri) return;
+    if (!piece.uri) return;
 
-    const metadataUrl = ipfsToHttp(piece.tokenUri);
+    const metadataUrl = ipfsToHttp(piece.uri);
     if (!metadataUrl) return;
 
     fetch(metadataUrl)
       .then((res) => res.json())
       .then((data) => setMetadata(data as ContentMetadata))
       .catch(() => setMetadata(null));
-  }, [piece.tokenUri, propMetadata]);
+  }, [piece.uri, propMetadata]);
 
   const imageUrl = metadata?.image ? ipfsToHttp(metadata.image) : null;
   const contentType = metadata?.contentType ?? "image";

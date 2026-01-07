@@ -14,7 +14,7 @@ export function useAuctionState(
   const { data: rawAuctionState, refetch, isLoading, error } = useReadContract({
     address: CONTRACT_ADDRESSES.multicall as `0x${string}`,
     abi: MULTICALL_ABI,
-    functionName: "getAuction",
+    functionName: "getAuctionState",
     args: contentAddress ? [contentAddress, account ?? zeroAddress] : undefined,
     chainId: base.id,
     query: {
@@ -47,7 +47,7 @@ export function useAllAuctionStates(
   const contracts = communityAddresses.map((address) => ({
     address: CONTRACT_ADDRESSES.multicall as `0x${string}`,
     abi: MULTICALL_ABI,
-    functionName: "getAuction" as const,
+    functionName: "getAuctionState" as const,
     args: [address, account ?? zeroAddress] as const,
     chainId: base.id,
   }));

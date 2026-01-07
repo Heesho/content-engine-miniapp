@@ -1,7 +1,7 @@
 export const CONTRACT_ADDRESSES = {
   // Core Content Engine contracts
   core: "0x1595905587751a7777dC6edc740bfCF5707cb42e",
-  multicall: "0x50357c9A126274f2cC914f5C0BAf9472f42Cb059",
+  multicall: "0xBBa2533E00a685D76099b9bd6708bd2D677da11E",
   // Token addresses
   weth: "0x4200000000000000000000000000000000000006",
   usdc: "0xe90495BE187d434e23A9B1FeC0B6Ce039700870e", // MockUSDC - quote token
@@ -192,31 +192,67 @@ export const MULTICALL_ABI = [
     stateMutability: "nonpayable",
     type: "function",
   },
-  // getContent function - get aggregated content state
+  // getUnitState function - get aggregated state for a Unit ecosystem
   {
     inputs: [
       { internalType: "address", name: "content", type: "address" },
       { internalType: "address", name: "account", type: "address" },
     ],
-    name: "getContent",
+    name: "getUnitState",
     outputs: [
       {
         components: [
+          { internalType: "uint256", name: "index", type: "uint256" },
+          { internalType: "address", name: "unit", type: "address" },
+          { internalType: "address", name: "quote", type: "address" },
           { internalType: "address", name: "launcher", type: "address" },
           { internalType: "address", name: "minter", type: "address" },
           { internalType: "address", name: "rewarder", type: "address" },
           { internalType: "address", name: "auction", type: "address" },
-          { internalType: "address", name: "unit", type: "address" },
           { internalType: "address", name: "lp", type: "address" },
-          { internalType: "address", name: "treasury", type: "address" },
           { internalType: "string", name: "uri", type: "string" },
           { internalType: "bool", name: "isModerated", type: "bool" },
           { internalType: "uint256", name: "totalSupply", type: "uint256" },
-          { internalType: "uint256", name: "minInitPrice", type: "uint256" },
-          { internalType: "uint256", name: "unitPrice", type: "uint256" },
-          { internalType: "uint256", name: "quoteBalance", type: "uint256" },
-          { internalType: "uint256", name: "donutBalance", type: "uint256" },
-          { internalType: "uint256", name: "unitBalance", type: "uint256" },
+          { internalType: "uint256", name: "marketCapInDonut", type: "uint256" },
+          { internalType: "uint256", name: "liquidityInDonut", type: "uint256" },
+          { internalType: "uint256", name: "priceInDonut", type: "uint256" },
+          { internalType: "uint256", name: "contentRewardForDuration", type: "uint256" },
+          { internalType: "uint256", name: "accountQuoteBalance", type: "uint256" },
+          { internalType: "uint256", name: "accountUnitBalance", type: "uint256" },
+          { internalType: "uint256", name: "accountContentOwned", type: "uint256" },
+          { internalType: "uint256", name: "accountContentStaked", type: "uint256" },
+          { internalType: "uint256", name: "accountUnitEarned", type: "uint256" },
+          { internalType: "bool", name: "accountIsModerator", type: "bool" },
+        ],
+        internalType: "struct Multicall.UnitState",
+        name: "state",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  // getContentState function - get state for a specific content token
+  {
+    inputs: [
+      { internalType: "address", name: "content", type: "address" },
+      { internalType: "uint256", name: "tokenId", type: "uint256" },
+    ],
+    name: "getContentState",
+    outputs: [
+      {
+        components: [
+          { internalType: "uint256", name: "tokenId", type: "uint256" },
+          { internalType: "uint256", name: "epochId", type: "uint256" },
+          { internalType: "uint256", name: "startTime", type: "uint256" },
+          { internalType: "uint256", name: "initPrice", type: "uint256" },
+          { internalType: "uint256", name: "stake", type: "uint256" },
+          { internalType: "uint256", name: "price", type: "uint256" },
+          { internalType: "uint256", name: "rewardForDuration", type: "uint256" },
+          { internalType: "address", name: "creator", type: "address" },
+          { internalType: "address", name: "owner", type: "address" },
+          { internalType: "string", name: "uri", type: "string" },
+          { internalType: "bool", name: "isApproved", type: "bool" },
         ],
         internalType: "struct Multicall.ContentState",
         name: "state",
@@ -226,90 +262,13 @@ export const MULTICALL_ABI = [
     stateMutability: "view",
     type: "function",
   },
-  // getToken function - get state for a specific content token
-  {
-    inputs: [
-      { internalType: "address", name: "content", type: "address" },
-      { internalType: "uint256", name: "tokenId", type: "uint256" },
-    ],
-    name: "getToken",
-    outputs: [
-      {
-        components: [
-          { internalType: "uint256", name: "tokenId", type: "uint256" },
-          { internalType: "address", name: "owner", type: "address" },
-          { internalType: "address", name: "creator", type: "address" },
-          { internalType: "bool", name: "isApproved", type: "bool" },
-          { internalType: "uint256", name: "stake", type: "uint256" },
-          { internalType: "uint256", name: "epochId", type: "uint256" },
-          { internalType: "uint256", name: "initPrice", type: "uint256" },
-          { internalType: "uint256", name: "startTime", type: "uint256" },
-          { internalType: "uint256", name: "price", type: "uint256" },
-          { internalType: "string", name: "tokenUri", type: "string" },
-        ],
-        internalType: "struct Multicall.TokenState",
-        name: "state",
-        type: "tuple",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  // getMinter function - get minter state
-  {
-    inputs: [{ internalType: "address", name: "content", type: "address" }],
-    name: "getMinter",
-    outputs: [
-      {
-        components: [
-          { internalType: "uint256", name: "activePeriod", type: "uint256" },
-          { internalType: "uint256", name: "weeklyEmission", type: "uint256" },
-          { internalType: "uint256", name: "currentUps", type: "uint256" },
-          { internalType: "uint256", name: "initialUps", type: "uint256" },
-          { internalType: "uint256", name: "tailUps", type: "uint256" },
-          { internalType: "uint256", name: "halvingPeriod", type: "uint256" },
-          { internalType: "uint256", name: "startTime", type: "uint256" },
-        ],
-        internalType: "struct Multicall.MinterState",
-        name: "state",
-        type: "tuple",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  // getRewarder function - get rewarder state
+  // getAuctionState function - get auction state
   {
     inputs: [
       { internalType: "address", name: "content", type: "address" },
       { internalType: "address", name: "account", type: "address" },
     ],
-    name: "getRewarder",
-    outputs: [
-      {
-        components: [
-          { internalType: "uint256", name: "totalSupply", type: "uint256" },
-          { internalType: "uint256", name: "accountBalance", type: "uint256" },
-          { internalType: "uint256", name: "earnedUnit", type: "uint256" },
-          { internalType: "uint256", name: "earnedQuote", type: "uint256" },
-          { internalType: "uint256", name: "leftUnit", type: "uint256" },
-          { internalType: "uint256", name: "leftQuote", type: "uint256" },
-        ],
-        internalType: "struct Multicall.RewarderState",
-        name: "state",
-        type: "tuple",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  // getAuction function - get auction state
-  {
-    inputs: [
-      { internalType: "address", name: "content", type: "address" },
-      { internalType: "address", name: "account", type: "address" },
-    ],
-    name: "getAuction",
+    name: "getAuctionState",
     outputs: [
       {
         components: [
@@ -321,7 +280,6 @@ export const MULTICALL_ABI = [
           { internalType: "uint256", name: "paymentTokenPrice", type: "uint256" },
           { internalType: "uint256", name: "quoteAccumulated", type: "uint256" },
           { internalType: "uint256", name: "quoteBalance", type: "uint256" },
-          { internalType: "uint256", name: "donutBalance", type: "uint256" },
           { internalType: "uint256", name: "paymentTokenBalance", type: "uint256" },
         ],
         internalType: "struct Multicall.AuctionState",
@@ -714,54 +672,42 @@ export const REWARDER_ABI = [
 ] as const;
 
 // TypeScript types for contract returns
-export type ContentState = {
+export type UnitState = {
+  index: bigint;
+  unit: `0x${string}`;
+  quote: `0x${string}`;
   launcher: `0x${string}`;
   minter: `0x${string}`;
   rewarder: `0x${string}`;
   auction: `0x${string}`;
-  unit: `0x${string}`;
   lp: `0x${string}`;
-  treasury: `0x${string}`;
   uri: string;
   isModerated: boolean;
   totalSupply: bigint;
-  minInitPrice: bigint;
-  unitPrice: bigint;
-  quoteBalance: bigint;
-  donutBalance: bigint;
-  unitBalance: bigint;
+  marketCapInDonut: bigint;
+  liquidityInDonut: bigint;
+  priceInDonut: bigint;
+  contentRewardForDuration: bigint;
+  accountQuoteBalance: bigint;
+  accountUnitBalance: bigint;
+  accountContentOwned: bigint;
+  accountContentStaked: bigint;
+  accountUnitEarned: bigint;
+  accountIsModerator: boolean;
 };
 
-export type TokenState = {
+export type ContentState = {
   tokenId: bigint;
-  owner: `0x${string}`;
-  creator: `0x${string}`;
-  isApproved: boolean;
-  stake: bigint;
   epochId: bigint;
+  startTime: bigint;
   initPrice: bigint;
-  startTime: bigint;
+  stake: bigint;
   price: bigint;
-  tokenUri: string;
-};
-
-export type MinterState = {
-  activePeriod: bigint;
-  weeklyEmission: bigint;
-  currentUps: bigint;
-  initialUps: bigint;
-  tailUps: bigint;
-  halvingPeriod: bigint;
-  startTime: bigint;
-};
-
-export type RewarderState = {
-  totalSupply: bigint;
-  accountBalance: bigint;
-  earnedUnit: bigint;
-  earnedQuote: bigint;
-  leftUnit: bigint;
-  leftQuote: bigint;
+  rewardForDuration: bigint;
+  creator: `0x${string}`;
+  owner: `0x${string}`;
+  uri: string;
+  isApproved: boolean;
 };
 
 export type AuctionState = {
@@ -773,7 +719,6 @@ export type AuctionState = {
   paymentTokenPrice: bigint;
   quoteAccumulated: bigint;
   quoteBalance: bigint;
-  donutBalance: bigint;
   paymentTokenBalance: bigint;
 };
 

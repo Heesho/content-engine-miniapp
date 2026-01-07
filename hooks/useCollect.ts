@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { encodeFunctionData } from "viem";
-import { CONTRACT_ADDRESSES, MULTICALL_ABI, type TokenState } from "@/lib/contracts";
+import { CONTRACT_ADDRESSES, MULTICALL_ABI } from "@/lib/contracts";
 import { DEADLINE_BUFFER_SECONDS, USDC_DECIMALS } from "@/lib/constants";
 import {
   useBatchedTransaction,

@@ -24,7 +24,7 @@ import { NavBar } from "@/components/nav-bar";
 import { ContentFeed } from "@/components/content-feed";
 import { CreateContentModal } from "@/components/create-content-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useCommunityState, useCommunityInfo, useRewarderState } from "@/hooks/useCommunityState";
+import { useCommunityState, useCommunityInfo } from "@/hooks/useCommunityState";
 import { useDexScreener } from "@/hooks/useDexScreener";
 import { useFarcaster, viewProfile } from "@/hooks/useFarcaster";
 import { usePrices } from "@/hooks/usePrices";
@@ -84,15 +84,14 @@ export default function CommunityDetailPage() {
   const { address, isConnected, connect, user: farcasterUser } = useFarcaster();
 
   // Community data
-  const { communityState, refetch: refetchCommunityState } = useCommunityState(contentAddress, address);
+  const { unitState, refetch: refetchCommunityState } = useCommunityState(contentAddress, address);
   const { communityInfo } = useCommunityInfo(contentAddress);
-  const { rewarderState, refetch: refetchRewarderState } = useRewarderState(contentAddress, address);
 
   // DexScreener data for token price/market stats
   const { pairData, lpAddress } = useDexScreener(contentAddress, communityInfo?.unitAddress);
 
   // Use cached metadata hook
-  const { metadata: tokenMetadata, logoUrl: tokenLogoUrl } = useTokenMetadata(communityState?.uri);
+  const { metadata: tokenMetadata, logoUrl: tokenLogoUrl } = useTokenMetadata(unitState?.uri);
 
   // Token total supply
   const { data: totalSupplyRaw } = useReadContract({
@@ -165,8 +164,8 @@ export default function CommunityDetailPage() {
 
     if (inputUsd === 0 || outputUsd === 0) {
       const dexPrice = pairData?.priceUsd ? parseFloat(pairData.priceUsd) : null;
-      const onChainPrice = communityState?.unitPrice && communityState.unitPrice > 0n
-        ? Number(formatEther(communityState.unitPrice)) * donutUsdPrice
+      const onChainPrice = unitState?.priceInDonut && unitState.priceInDonut > 0n
+        ? Number(formatEther(unitState.priceInDonut)) * donutUsdPrice
         : 0;
       const tokenPrice = dexPrice ?? onChainPrice;
 
@@ -178,7 +177,7 @@ export default function CommunityDetailPage() {
 
     const impact = ((inputUsd - outputUsd) / inputUsd) * 100;
     return Math.min(49, Math.max(2, Math.ceil(Math.max(0, impact)) + 2));
-  }, [tradePriceQuote, tradeAmount, tradeOutputAmountForSlippage, tradeDirection, ethUsdPrice, pairData?.priceUsd, communityState?.unitPrice, donutUsdPrice]);
+  }, [tradePriceQuote, tradeAmount, tradeOutputAmountForSlippage, tradeDirection, ethUsdPrice, pairData?.priceUsd, unitState?.priceInDonut, donutUsdPrice]);
 
   // Get full quote for trading
   const { data: tradeQuote, isLoading: isLoadingTradeQuote, refetch: refetchTradeQuote } = useSwapQuote({
@@ -194,13 +193,13 @@ export default function CommunityDetailPage() {
   // Handle claim rewards success
   useEffect(() => {
     if (claimState === "success") {
-      refetchRewarderState();
+      refetchCommunityState();
       refetchBalances();
       setTimeout(() => resetClaim(), 2000);
     } else if (claimState === "error") {
       setTimeout(() => resetClaim(), 2000);
     }
-  }, [claimState, resetClaim, refetchRewarderState, refetchBalances]);
+  }, [claimState, resetClaim, refetchCommunityState, refetchBalances]);
 
   // Track last processed swap hash to detect new successful swaps
   const lastProcessedSwapHash = useRef<string | null>(null);
@@ -337,8 +336,8 @@ export default function CommunityDetailPage() {
 
     if (inputUsd === 0 || outputUsd === 0) {
       const dexPrice = pairData?.priceUsd ? parseFloat(pairData.priceUsd) : null;
-      const onChainPrice = communityState?.unitPrice && communityState.unitPrice > 0n
-        ? Number(formatEther(communityState.unitPrice)) * donutUsdPrice
+      const onChainPrice = unitState?.priceInDonut && unitState.priceInDonut > 0n
+        ? Number(formatEther(unitState.priceInDonut)) * donutUsdPrice
         : 0;
       const tokenPrice = dexPrice ?? onChainPrice;
 
@@ -350,7 +349,7 @@ export default function CommunityDetailPage() {
 
     const impact = ((inputUsd - outputUsd) / inputUsd) * 100;
     return Math.max(0, impact);
-  }, [tradePriceQuote, tradeAmount, tradeOutputAmount, tradeDirection, ethUsdPrice, pairData?.priceUsd, communityState?.unitPrice, donutUsdPrice]);
+  }, [tradePriceQuote, tradeAmount, tradeOutputAmount, tradeDirection, ethUsdPrice, pairData?.priceUsd, unitState?.priceInDonut, donutUsdPrice]);
 
   const tradeInsufficientBalance = useMemo(() => {
     if (!tradeAmount || !tradeBalance) return false;
@@ -371,7 +370,7 @@ export default function CommunityDetailPage() {
   const tokenName = communityInfo?.tokenName ?? "Loading...";
 
   // Calculate values
-  const unitPrice = communityState?.unitPrice ?? 0n;
+  const unitPrice = unitState?.priceInDonut ?? 0n;
   const tokenPriceUsd = unitPrice > 0n ? Number(formatEther(unitPrice)) * donutUsdPrice : 0;
 
   // Token stats - prefer DexScreener data when available
@@ -382,15 +381,15 @@ export default function CommunityDetailPage() {
   const liquidity = pairData?.liquidity?.usd ?? 0;
 
   // User balances
-  const unitBalance = communityState?.unitBalance ? Number(formatUnits(communityState.unitBalance, TOKEN_DECIMALS)) : 0;
+  const unitBalance = unitState?.accountUnitBalance ? Number(formatUnits(unitState.accountUnitBalance, TOKEN_DECIMALS)) : 0;
   const unitBalanceUsd = unitPrice > 0n ? unitBalance * Number(formatEther(unitPrice)) * donutUsdPrice : 0;
 
-  // Pending rewards
-  const pendingUnit = rewarderState?.earnedUnit ?? 0n;
-  const pendingQuote = rewarderState?.earnedQuote ?? 0n;
+  // Pending rewards (from unitState)
+  const pendingUnit = unitState?.accountUnitEarned ?? 0n;
+  const pendingQuote = 0n; // No longer available in new contract
   const pendingUnitUsd = pendingUnit > 0n ? Number(formatUnits(pendingUnit, TOKEN_DECIMALS)) * displayPriceUsd : 0;
-  const pendingQuoteUsd = pendingQuote > 0n ? Number(formatUnits(pendingQuote, USDC_DECIMALS)) : 0;
-  const hasPendingRewards = pendingUnit > 0n || pendingQuote > 0n;
+  const pendingQuoteUsd = 0; // No longer available
+  const hasPendingRewards = pendingUnit > 0n;
 
   // Trade button text
   const tradeButtonText = useMemo(() => {
@@ -409,7 +408,7 @@ export default function CommunityDetailPage() {
   const canTrade = isConnected && tradeAmount && parseFloat(tradeAmount) > 0 && !tradeInsufficientBalance && !isTradeLoading && !hasNoLiquidity && !!tradeQuote?.transaction?.to;
 
   // Launcher info
-  const launcherAddress = communityState?.launcher as `0x${string}` | undefined;
+  const launcherAddress = unitState?.launcher as `0x${string}` | undefined;
   const hasLauncher = launcherAddress && launcherAddress !== "0x0000000000000000000000000000000000000000";
   const {
     displayName: launcherDisplayName,
@@ -418,7 +417,7 @@ export default function CommunityDetailPage() {
   } = useProfile(hasLauncher ? launcherAddress : undefined);
 
   // Show nothing until essential data is ready
-  const isPageLoading = !communityInfo || !communityState;
+  const isPageLoading = !communityInfo || !unitState;
 
   if (isPageLoading) {
     return (
@@ -496,7 +495,7 @@ export default function CommunityDetailPage() {
             </div>
             <div>
               <div className="text-xs text-zinc-500">Content</div>
-              <div className="text-sm font-semibold">{Number(communityState.totalSupply).toLocaleString()}</div>
+              <div className="text-sm font-semibold">{Number(unitState.totalSupply).toLocaleString()}</div>
             </div>
           </div>
 
