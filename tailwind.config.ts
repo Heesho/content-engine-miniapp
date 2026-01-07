@@ -9,10 +9,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        purple: {
-          400: "#b48aff",
-          500: "#a06fff",
-          600: "#8a5fe6",
+        teal: {
+          400: "#6DD3C8",
+          500: "#5CBDB3",
+          600: "#4AA69D",
         },
       },
     },
