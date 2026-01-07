@@ -265,10 +265,8 @@ export function useExploreCommunities(
     combinedCommunities.sort((a, b) => (a.unitPrice > b.unitPrice ? -1 : 1));
   }
 
-  // Filter out communities without valid metadata (must have ipfs:// URI)
-  const filteredCommunities = combinedCommunities.filter(
-    (c) => c.uri && c.uri.startsWith("ipfs://")
-  );
+  // Show all communities (temporarily removed URI filter for debugging)
+  const filteredCommunities = combinedCommunities;
 
   // Loading until we have actual data ready to display
   const hasData = filteredCommunities.length > 0 || addresses.length === 0;
