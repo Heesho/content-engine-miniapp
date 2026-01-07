@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { formatEther, formatUnits } from "viem";
-import { Coins } from "lucide-react";
+import { formatEther, formatUnits, parseUnits } from "viem";
+import { Coins, Droplets } from "lucide-react";
+import { useBalance, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NavBar } from "@/components/nav-bar";
@@ -11,7 +12,8 @@ import { useFarcaster, getUserDisplayName, getUserHandle, initialsFrom } from "@
 import { useExploreCommunities } from "@/hooks/useAllCommunities";
 import { useAllPendingRewards, useClaimRewards } from "@/hooks/useRewards";
 import { cn, getDonutPrice } from "@/lib/utils";
-import { DEFAULT_DONUT_PRICE_USD, PRICE_REFETCH_INTERVAL_MS, ipfsToHttp, USDC_DECIMALS, TOKEN_DECIMALS } from "@/lib/constants";
+import { DEFAULT_DONUT_PRICE_USD, PRICE_REFETCH_INTERVAL_MS, ipfsToHttp, USDC_DECIMALS, TOKEN_DECIMALS, DEFAULT_CHAIN_ID } from "@/lib/constants";
+import { CONTRACT_ADDRESSES, MOCK_TOKEN_ABI } from "@/lib/contracts";
 
 type TabOption = "collected" | "launched";
 
@@ -204,6 +206,83 @@ export default function ProfilePage() {
   const { user, address } = useFarcaster();
   const { communities, isLoading } = useExploreCommunities("active", "", address);
 
+  // Token balances for faucet
+  const { data: usdcBalance, refetch: refetchUsdc } = useBalance({
+    address,
+    token: CONTRACT_ADDRESSES.usdc as `0x${string}`,
+    chainId: DEFAULT_CHAIN_ID,
+    query: { enabled: !!address },
+  });
+
+  const { data: donutBalance, refetch: refetchDonut } = useBalance({
+    address,
+    token: CONTRACT_ADDRESSES.donut as `0x${string}`,
+    chainId: DEFAULT_CHAIN_ID,
+    query: { enabled: !!address },
+  });
+
+  // Mint USDC
+  const {
+    writeContract: mintUsdc,
+    data: usdcTxHash,
+    isPending: isUsdcPending,
+    reset: resetUsdcMint,
+  } = useWriteContract();
+
+  const { isLoading: isUsdcConfirming, isSuccess: isUsdcSuccess } = useWaitForTransactionReceipt({
+    hash: usdcTxHash,
+  });
+
+  // Mint DONUT
+  const {
+    writeContract: mintDonut,
+    data: donutTxHash,
+    isPending: isDonutPending,
+    reset: resetDonutMint,
+  } = useWriteContract();
+
+  const { isLoading: isDonutConfirming, isSuccess: isDonutSuccess } = useWaitForTransactionReceipt({
+    hash: donutTxHash,
+  });
+
+  // Handle USDC mint success
+  useEffect(() => {
+    if (isUsdcSuccess) {
+      refetchUsdc();
+      setTimeout(() => resetUsdcMint(), 2000);
+    }
+  }, [isUsdcSuccess, refetchUsdc, resetUsdcMint]);
+
+  // Handle DONUT mint success
+  useEffect(() => {
+    if (isDonutSuccess) {
+      refetchDonut();
+      setTimeout(() => resetDonutMint(), 2000);
+    }
+  }, [isDonutSuccess, refetchDonut, resetDonutMint]);
+
+  const handleMintUsdc = useCallback(() => {
+    if (!address) return;
+    mintUsdc({
+      address: CONTRACT_ADDRESSES.usdc as `0x${string}`,
+      abi: MOCK_TOKEN_ABI,
+      functionName: "mint",
+      args: [address, parseUnits("1000", USDC_DECIMALS)], // Mint 1000 USDC
+      chainId: DEFAULT_CHAIN_ID,
+    });
+  }, [address, mintUsdc]);
+
+  const handleMintDonut = useCallback(() => {
+    if (!address) return;
+    mintDonut({
+      address: CONTRACT_ADDRESSES.donut as `0x${string}`,
+      abi: MOCK_TOKEN_ABI,
+      functionName: "mint",
+      args: [address, parseUnits("10000", TOKEN_DECIMALS)], // Mint 10000 DONUT
+      chainId: DEFAULT_CHAIN_ID,
+    });
+  }, [address, mintDonut]);
+
   // Get addresses of communities user has launched
   const launchedCommunities = useMemo(() => {
     if (!address || !communities) return [];
@@ -308,6 +387,50 @@ export default function ProfilePage() {
           ) : (
             <div className="flex items-center justify-center p-6 mb-4 rounded-xl bg-zinc-900">
               <p className="text-gray-500">Connect wallet to view your profile</p>
+            </div>
+          )}
+
+          {/* Faucet Section */}
+          {user && address && (
+            <div className="mx-0.5 mb-3 p-3 rounded-xl bg-zinc-900 border border-zinc-800">
+              <div className="flex items-center gap-2 mb-3">
+                <Droplets className="w-4 h-4 text-blue-400" />
+                <span className="text-sm font-semibold text-white">Test Token Faucet</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {/* USDC */}
+                <div className="p-2 rounded-lg bg-zinc-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-gray-400">USDC</span>
+                    <span className="text-xs font-mono text-white">
+                      {usdcBalance ? Number(formatUnits(usdcBalance.value, USDC_DECIMALS)).toLocaleString(undefined, { maximumFractionDigits: 2 }) : "0"}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleMintUsdc}
+                    disabled={isUsdcPending || isUsdcConfirming}
+                    className="w-full py-1.5 rounded-md bg-green-600 hover:bg-green-500 text-white text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isUsdcSuccess ? "Minted!" : isUsdcPending || isUsdcConfirming ? "Minting..." : "Mint 1,000"}
+                  </button>
+                </div>
+                {/* DONUT */}
+                <div className="p-2 rounded-lg bg-zinc-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-gray-400">DONUT</span>
+                    <span className="text-xs font-mono text-white">
+                      {donutBalance ? Number(formatUnits(donutBalance.value, TOKEN_DECIMALS)).toLocaleString(undefined, { maximumFractionDigits: 0 }) : "0"}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleMintDonut}
+                    disabled={isDonutPending || isDonutConfirming}
+                    className="w-full py-1.5 rounded-md bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDonutSuccess ? "Minted!" : isDonutPending || isDonutConfirming ? "Minting..." : "Mint 10,000"}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

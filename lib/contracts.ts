@@ -373,6 +373,21 @@ export const ERC20_ABI = [
   },
 ] as const;
 
+// Mock token ABI - includes mint function for testing
+export const MOCK_TOKEN_ABI = [
+  ...ERC20_ABI,
+  {
+    inputs: [
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "amount", type: "uint256" },
+    ],
+    name: "mint",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+] as const;
+
 // Content contract ABI - ERC721Enumerable + custom functions
 export const CONTENT_ABI = [
   // Create content NFT
