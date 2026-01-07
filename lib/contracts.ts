@@ -1,7 +1,7 @@
 export const CONTRACT_ADDRESSES = {
   // Core Content Engine contracts
   core: "0x1595905587751a7777dC6edc740bfCF5707cb42e",
-  multicall: "0xBBa2533E00a685D76099b9bd6708bd2D677da11E",
+  multicall: "0x1F70688c2b2cE5991B536758107B534a091c2c0E",
   // Token addresses
   weth: "0x4200000000000000000000000000000000000006",
   usdc: "0xe90495BE187d434e23A9B1FeC0B6Ce039700870e", // MockUSDC - quote token
