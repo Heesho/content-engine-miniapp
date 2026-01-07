@@ -102,10 +102,14 @@ export function useCommunityStates(
   });
 
   const communityStates = states
-    ?.map((result, index) => ({
-      address: communityAddresses[index],
-      state: result.result as UnitState | undefined,
-    }))
+    ?.map((result, index) => {
+      console.log(`Community ${communityAddresses[index]} multicall result:`, result);
+      console.log(`State data:`, result.result);
+      return {
+        address: communityAddresses[index],
+        state: result.result as UnitState | undefined,
+      };
+    })
     .filter((item) => item.state);
 
   return {
