@@ -518,7 +518,7 @@ export default function CommunityDetailPage() {
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-colors text-xs text-zinc-400"
                   title="Copy link"
                 >
-                  {copiedLink ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedLink ? <Check className="w-3.5 h-3.5 text-teal-400" /> : <Copy className="w-3.5 h-3.5" />}
                   {copiedLink ? "Copied" : "Share"}
                 </button>
               </div>
@@ -541,7 +541,7 @@ export default function CommunityDetailPage() {
                   {hasPendingRewards && (
                     <div>
                       <div className="text-xs text-zinc-500">Pending Rewards</div>
-                      <div className="text-sm font-semibold text-green-400">
+                      <div className="text-sm font-semibold text-teal-400">
                         +{formatUsd(pendingUnitUsd + pendingQuoteUsd)}
                       </div>
                       <button
@@ -749,8 +749,8 @@ export default function CommunityDetailPage() {
                 <div className="flex justify-between text-xs px-1 pb-3">
                   <span className="text-zinc-500">Price impact / Slippage</span>
                   <span className={cn(
-                    priceImpact !== null && priceImpact > 10 ? "text-red-500" :
-                    priceImpact !== null && priceImpact > 5 ? "text-yellow-500" : "text-zinc-500"
+                    priceImpact !== null && priceImpact > 10 ? "text-teal-500" :
+                    priceImpact !== null && priceImpact > 5 ? "text-teal-500" : "text-zinc-500"
                   )}>
                     {priceImpact !== null && priceImpact > 5 && "⚠️ "}
                     {priceImpact !== null ? `${priceImpact.toFixed(2)}%` : "—"} / {slippage}%

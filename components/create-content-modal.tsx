@@ -345,14 +345,14 @@ export function CreateContentModal({
 
           {/* Error message */}
           {error && (
-            <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
+            <div className="p-3 bg-teal-500/20 border border-teal-500/50 rounded-lg text-teal-400 text-sm">
               {error.message}
             </div>
           )}
 
           {/* Success message */}
           {state === "success" && (
-            <div className="p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 text-sm flex items-center gap-2">
+            <div className="p-3 bg-teal-500/20 border border-teal-500/50 rounded-lg text-teal-400 text-sm flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" />
               Content created successfully!
             </div>

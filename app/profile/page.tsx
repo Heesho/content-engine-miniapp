@@ -100,7 +100,7 @@ function CommunityCard({ community, donutUsdPrice, showRewards }: {
         <div className="flex-shrink-0 text-right">
           {showRewards && totalPendingUsd > 0 ? (
             <>
-              <div className="text-sm font-semibold text-green-400">
+              <div className="text-sm font-semibold text-teal-400">
                 +${totalPendingUsd.toFixed(2)}
               </div>
               <div className="text-xs text-gray-500">
@@ -394,7 +394,7 @@ export default function ProfilePage() {
           {user && address && (
             <div className="mx-0.5 mb-3 p-3 rounded-xl bg-zinc-900 border border-zinc-800">
               <div className="flex items-center gap-2 mb-3">
-                <Droplets className="w-4 h-4 text-blue-400" />
+                <Droplets className="w-4 h-4 text-teal-400" />
                 <span className="text-sm font-semibold text-white">Test Token Faucet</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -409,7 +409,7 @@ export default function ProfilePage() {
                   <button
                     onClick={handleMintUsdc}
                     disabled={isUsdcPending || isUsdcConfirming}
-                    className="w-full py-1.5 rounded-md bg-green-600 hover:bg-green-500 text-white text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-1.5 rounded-md bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isUsdcSuccess ? "Minted!" : isUsdcPending || isUsdcConfirming ? "Minting..." : "Mint 1,000"}
                   </button>
@@ -436,16 +436,16 @@ export default function ProfilePage() {
 
           {/* Pending Rewards Banner */}
           {user && totalPendingUsd > 0 && (
-            <div className="mx-0.5 mb-3 p-3 rounded-xl bg-green-500/10 border border-green-500/30">
+            <div className="mx-0.5 mb-3 p-3 rounded-xl bg-teal-500/10 border border-teal-500/30">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xs text-green-400">Pending Rewards</div>
-                  <div className="text-lg font-bold text-green-400">+${totalPendingUsd.toFixed(2)}</div>
+                  <div className="text-xs text-teal-400">Pending Rewards</div>
+                  <div className="text-lg font-bold text-teal-400">+${totalPendingUsd.toFixed(2)}</div>
                 </div>
                 <button
                   onClick={handleClaimAll}
                   disabled={claimState === "pending" || claimState === "confirming"}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500 text-black font-semibold hover:bg-green-400 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-500 text-black font-semibold hover:bg-teal-400 transition-colors disabled:opacity-50"
                 >
                   <Coins className="w-4 h-4" />
                   {claimState === "success" ? "Claimed!" : claimState === "pending" || claimState === "confirming" ? "Claiming..." : "Claim"}

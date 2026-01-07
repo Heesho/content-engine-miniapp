@@ -677,27 +677,27 @@ export default function AuctionsPage() {
                     className={cn(
                       "rounded-lg px-3 py-2 mb-3 text-center",
                       selectedProfitLoss > 0.01
-                        ? "bg-green-500/20 border border-green-500/50"
+                        ? "bg-teal-500/20 border border-teal-500/50"
                         : selectedProfitLoss >= -0.01
-                          ? "bg-yellow-500/20 border border-yellow-500/50"
-                          : "bg-red-500/20 border border-red-500/50"
+                          ? "bg-teal-500/20 border border-teal-500/50"
+                          : "bg-teal-500/20 border border-teal-500/50"
                     )}
                   >
                     {selectedProfitLoss > 0.01 ? (
                       <div className="flex items-center justify-center gap-2">
-                        <span className="text-green-400 font-semibold">GOOD DEAL</span>
-                        <span className="text-green-300 text-sm">
+                        <span className="text-teal-400 font-semibold">GOOD DEAL</span>
+                        <span className="text-teal-300 text-sm">
                           +${selectedProfitLoss.toFixed(2)} profit
                         </span>
                       </div>
                     ) : selectedProfitLoss >= -0.01 ? (
                       <div className="flex items-center justify-center gap-2">
-                        <span className="text-yellow-400 font-semibold">BREAK EVEN</span>
+                        <span className="text-teal-400 font-semibold">BREAK EVEN</span>
                       </div>
                     ) : (
                       <div className="flex items-center justify-center gap-2">
-                        <span className="text-red-400 font-semibold">WARNING</span>
-                        <span className="text-red-300 text-sm">
+                        <span className="text-teal-400 font-semibold">WARNING</span>
+                        <span className="text-teal-300 text-sm">
                           -${Math.abs(selectedProfitLoss).toFixed(2)} loss
                         </span>
                       </div>
@@ -767,7 +767,7 @@ export default function AuctionsPage() {
                           <span>Balance:</span>
                           <span className={cn(
                             "font-medium",
-                            hasInsufficientUnitBalance ? "text-red-400" : "text-white"
+                            hasInsufficientUnitBalance ? "text-teal-400" : "text-white"
                           )}>
                             {formatEth(userUnitBalance?.value ?? 0n, 2)}
                           </span>
@@ -803,7 +803,7 @@ export default function AuctionsPage() {
                           <span>Balance:</span>
                           <span className={cn(
                             "font-medium",
-                            hasInsufficientDonutBalance ? "text-red-400" : "text-white"
+                            hasInsufficientDonutBalance ? "text-teal-400" : "text-white"
                           )}>
                             {formatEth(userDonutBalance?.value ?? 0n, 2)}
                           </span>
@@ -837,7 +837,7 @@ export default function AuctionsPage() {
                       className={cn(
                         "w-full py-3 text-sm font-semibold rounded-lg text-black disabled:bg-teal-500/50 disabled:cursor-not-allowed",
                         lpSuccess
-                          ? "bg-green-500 hover:bg-green-500"
+                          ? "bg-teal-500 hover:bg-teal-500"
                           : "bg-teal-500 hover:bg-teal-600"
                       )}
                       onClick={handleCreateLp}
