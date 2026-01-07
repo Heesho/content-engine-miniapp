@@ -102,14 +102,10 @@ export function useCommunityStates(
   });
 
   const communityStates = states
-    ?.map((result, index) => {
-      const state = result.result as UnitState | undefined;
-      console.log(`Community ${communityAddresses[index]} URI:`, state?.uri);
-      return {
-        address: communityAddresses[index],
-        state,
-      };
-    })
+    ?.map((result, index) => ({
+      address: communityAddresses[index],
+      state: result.result as UnitState | undefined,
+    }))
     .filter((item) => item.state);
 
   return {
@@ -269,8 +265,10 @@ export function useExploreCommunities(
     combinedCommunities.sort((a, b) => (a.unitPrice > b.unitPrice ? -1 : 1));
   }
 
-  // Show all communities (filter disabled for debugging)
-  const filteredCommunities = combinedCommunities;
+  // Filter out communities without valid metadata (must have ipfs:// URI)
+  const filteredCommunities = combinedCommunities.filter(
+    (c) => c.uri && c.uri.startsWith("ipfs://")
+  );
 
   // Loading until we have actual data ready to display
   const hasData = filteredCommunities.length > 0 || addresses.length === 0;
