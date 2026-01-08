@@ -449,16 +449,7 @@ export default function CommunityDetailPage() {
             <Link href="/explore" className="p-1 -ml-1 hover:opacity-70 transition-opacity z-10">
               <ArrowLeft className="h-5 w-5 text-teal-500" />
             </Link>
-            {/* Mode Toggle Button */}
-            <button
-              onClick={() => {
-                setMode(mode === "feed" ? "trade" : "feed");
-                setTradeAmount("");
-              }}
-              className="px-3 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-600 transition-colors text-black text-xs font-semibold z-10 outline-none focus:outline-none"
-            >
-              {mode === "feed" ? "Trade" : "Feed"}
-            </button>
+            <div className="w-6" /> {/* Spacer */}
           </div>
         </div>
 
@@ -613,20 +604,32 @@ export default function CommunityDetailPage() {
         <div className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-sm">
           <div className="max-w-[520px] mx-auto px-2 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+72px)]">
             {mode === "feed" ? (
-              /* Feed Mode - Create Content Button */
-              <button
-                onClick={() => setShowCreateModal(true)}
-                disabled={!isConnected}
-                className={cn(
-                  "w-full py-3 rounded-lg font-semibold transition-all text-sm flex items-center justify-center gap-2",
-                  isConnected
-                    ? "bg-teal-500 text-black hover:bg-teal-600 active:scale-[0.98]"
-                    : "bg-zinc-700 text-gray-400 cursor-not-allowed"
-                )}
-              >
-                <Plus className="w-5 h-5" />
-                Create Content
-              </button>
+              /* Feed Mode - Create & Trade Buttons */
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  disabled={!isConnected}
+                  className={cn(
+                    "flex-1 py-3 rounded-lg font-semibold transition-all text-sm flex items-center justify-center gap-2",
+                    isConnected
+                      ? "bg-teal-500 text-black hover:bg-teal-600 active:scale-[0.98]"
+                      : "bg-zinc-700 text-gray-400 cursor-not-allowed"
+                  )}
+                >
+                  <Plus className="w-5 h-5" />
+                  Create
+                </button>
+                <button
+                  onClick={() => {
+                    setMode("trade");
+                    setTradeAmount("");
+                  }}
+                  className="flex-1 py-3 rounded-lg font-semibold transition-all text-sm flex items-center justify-center gap-2 bg-zinc-800 text-white hover:bg-zinc-700 active:scale-[0.98]"
+                >
+                  <ArrowDownUp className="w-5 h-5" />
+                  Trade
+                </button>
+              </div>
             ) : (
               <>
                 {/* Trade Mode UI */}
@@ -755,18 +758,29 @@ export default function CommunityDetailPage() {
                   </span>
                 </div>
 
-                {/* Trade Button */}
-                <button
-                  onClick={handleTrade}
-                  disabled={!canTrade || isTradePending || tradeResult !== null}
-                  className={cn(
-                    "w-full py-3 rounded-lg font-semibold transition-all text-sm bg-teal-500 text-black hover:bg-teal-600",
-                    (!canTrade || isTradePending || tradeResult !== null) && "cursor-not-allowed",
-                    (!canTrade || isTradePending) && tradeResult === null && "opacity-40"
-                  )}
-                >
-                  {tradeButtonText}
-                </button>
+                {/* Trade Buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setMode("feed");
+                      setTradeAmount("");
+                    }}
+                    className="flex-1 py-3 rounded-lg font-semibold transition-all text-sm bg-zinc-800 text-white hover:bg-zinc-700 active:scale-[0.98]"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={handleTrade}
+                    disabled={!canTrade || isTradePending || tradeResult !== null}
+                    className={cn(
+                      "flex-1 py-3 rounded-lg font-semibold transition-all text-sm bg-teal-500 text-black hover:bg-teal-600",
+                      (!canTrade || isTradePending || tradeResult !== null) && "cursor-not-allowed",
+                      (!canTrade || isTradePending) && tradeResult === null && "opacity-40"
+                    )}
+                  >
+                    {tradeButtonText}
+                  </button>
+                </div>
 
                 {/* No Liquidity Message */}
                 {hasNoLiquidity && tradeAmount && parseFloat(tradeAmount) > 0 && (
