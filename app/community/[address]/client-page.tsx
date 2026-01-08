@@ -561,95 +561,20 @@ export default function CommunityDetailPage() {
             </div>
           </div>
 
-          {/* Stats Row */}
-          <div className="px-2 mt-4 grid grid-cols-3 gap-4">
-            <div>
-              <div className="text-xs text-zinc-500">Market Cap</div>
-              <div className="text-sm font-semibold">{formatUsd(marketCap, true)}</div>
-            </div>
-            <div>
-              <div className="text-xs text-zinc-500">Liquidity</div>
-              <div className="text-sm font-semibold">{formatUsd(liquidity, true)}</div>
-            </div>
-            <div>
-              <div className="text-xs text-zinc-500">Content</div>
-              <div className="text-sm font-semibold">{Number(unitState.totalSupply).toLocaleString()}</div>
-            </div>
-          </div>
-
-          {/* Your Position */}
-          {address && (
-            <div className="px-2 mt-4">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-sm font-bold">Your Position</h2>
-                <button
-                  onClick={async () => {
-                    const communityUrl = `${window.location.origin}/community/${contentAddress}`;
-                    try {
-                      await navigator.clipboard.writeText(communityUrl);
-                      setCopiedLink(true);
-                      setTimeout(() => setCopiedLink(false), 2000);
-                    } catch {
-                      setCopiedLink(false);
-                    }
-                  }}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-colors text-xs text-zinc-400"
-                  title="Copy link"
-                >
-                  {copiedLink ? <Check className="w-3.5 h-3.5 text-teal-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copiedLink ? "Copied" : "Share"}
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs text-zinc-500">Balance</div>
-                  <div className="flex items-center gap-1 text-sm font-semibold">
-                    {tokenLogoUrl ? (
-                      <img src={tokenLogoUrl} alt={tokenSymbol} className="w-4 h-4 rounded-full" />
-                    ) : (
-                      <span className="w-4 h-4 rounded-full bg-teal-500 flex items-center justify-center text-[8px] text-black font-bold">
-                        {tokenSymbol.slice(0, 2)}
-                      </span>
-                    )}
-                    <span>{unitBalance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                  </div>
-                  <div className="text-[10px] text-zinc-600">{formatUsd(unitBalanceUsd)}</div>
-                </div>
-                {hasPendingRewards && (
-                  <div>
-                    <div className="text-xs text-zinc-500">Pending Rewards</div>
-                    <div className="text-sm font-semibold text-teal-400">
-                      +{formatUsd(pendingUnitUsd + pendingQuoteUsd)}
-                    </div>
-                    <button
-                      onClick={handleClaim}
-                      disabled={claimState === "pending" || claimState === "confirming"}
-                      className="mt-1 flex items-center gap-1 text-[10px] text-teal-400 hover:text-teal-300"
-                    >
-                      <Coins className="w-3 h-3" />
-                      {claimState === "success" ? "Claimed!" : claimState === "pending" || claimState === "confirming" ? "Claiming..." : "Claim"}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* About Section */}
+          {/* About Section - Right under title */}
           {(tokenMetadata?.description || hasLauncher) && (
-            <div className="px-2 mt-4">
-              <h2 className="text-sm font-bold mb-2">About</h2>
+            <div className="px-2 mt-3">
               {hasLauncher && (
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs text-zinc-500">Launched by</span>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs text-zinc-500">by</span>
                   <button
                     onClick={() => launcherFid && viewProfile(launcherFid)}
                     disabled={!launcherFid}
-                    className={`flex items-center gap-2 ${launcherFid ? "cursor-pointer" : "cursor-default"}`}
+                    className={`flex items-center gap-1.5 ${launcherFid ? "cursor-pointer" : "cursor-default"}`}
                   >
-                    <Avatar className="h-5 w-5">
+                    <Avatar className="h-4 w-4">
                       <AvatarImage src={launcherAvatarUrl} alt={launcherDisplayName} />
-                      <AvatarFallback className="bg-zinc-800 text-white text-[8px]">
+                      <AvatarFallback className="bg-zinc-800 text-white text-[6px]">
                         {(launcherAddress as string).slice(2, 4).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -660,7 +585,7 @@ export default function CommunityDetailPage() {
                 </div>
               )}
               {tokenMetadata?.description && (
-                <p className="text-xs text-zinc-400">{tokenMetadata.description}</p>
+                <p className="text-xs text-zinc-500">{tokenMetadata.description}</p>
               )}
             </div>
           )}
@@ -669,11 +594,119 @@ export default function CommunityDetailPage() {
             <>
               {/* Content Feed Section */}
               <div className="px-2 mt-4">
-                <h2 className="text-sm font-bold mb-3">Content Feed</h2>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-bold">Content Feed</h2>
+                  <button
+                    onClick={async () => {
+                      const communityUrl = `${window.location.origin}/community/${contentAddress}`;
+                      try {
+                        await navigator.clipboard.writeText(communityUrl);
+                        setCopiedLink(true);
+                        setTimeout(() => setCopiedLink(false), 2000);
+                      } catch {
+                        setCopiedLink(false);
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-colors text-xs text-zinc-400"
+                    title="Copy link"
+                  >
+                    {copiedLink ? <Check className="w-3.5 h-3.5 text-teal-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedLink ? "Copied" : "Share"}
+                  </button>
+                </div>
                 <ContentFeed
                   contentAddress={contentAddress}
                   userAddress={address as `0x${string}` | undefined}
                 />
+              </div>
+
+              {/* Your Position Section */}
+              {address && (
+                <div className="px-2 mt-6">
+                  <h2 className="text-sm font-bold mb-3">Your Position</h2>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Coin Balance */}
+                    <div className="bg-zinc-900 rounded-lg p-3">
+                      <div className="text-xs text-zinc-500">Coin Balance</div>
+                      <div className="flex items-center gap-1 text-sm font-semibold mt-1">
+                        {tokenLogoUrl ? (
+                          <img src={tokenLogoUrl} alt={tokenSymbol} className="w-4 h-4 rounded-full" />
+                        ) : (
+                          <span className="w-4 h-4 rounded-full bg-teal-500 flex items-center justify-center text-[8px] text-black font-bold">
+                            {tokenSymbol.slice(0, 2)}
+                          </span>
+                        )}
+                        <span>{unitBalance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      </div>
+                      <div className="text-[10px] text-zinc-600">{formatUsd(unitBalanceUsd)}</div>
+                    </div>
+
+                    {/* Stickers Owned */}
+                    <div className="bg-zinc-900 rounded-lg p-3">
+                      <div className="text-xs text-zinc-500">Stickers Owned</div>
+                      <div className="text-sm font-semibold mt-1">
+                        {Number(unitState.accountContentOwned ?? 0).toLocaleString()}
+                      </div>
+                      <div className="text-[10px] text-zinc-600">
+                        {totalSupply > 0 ? `${((Number(unitState.accountContentOwned ?? 0) / Number(unitState.totalSupply)) * 100).toFixed(1)}% of total` : "—"}
+                      </div>
+                    </div>
+
+                    {/* Coin Claimable */}
+                    <div className="bg-zinc-900 rounded-lg p-3">
+                      <div className="text-xs text-zinc-500">Coin Claimable</div>
+                      <div className="text-sm font-semibold mt-1 text-teal-400">
+                        {pendingUnit > 0n
+                          ? Number(formatUnits(pendingUnit, TOKEN_DECIMALS)).toLocaleString(undefined, { maximumFractionDigits: 2 })
+                          : "0"}
+                      </div>
+                      {hasPendingRewards && (
+                        <button
+                          onClick={handleClaim}
+                          disabled={claimState === "pending" || claimState === "confirming"}
+                          className="mt-1 flex items-center gap-1 text-[10px] text-teal-400 hover:text-teal-300"
+                        >
+                          <Coins className="w-3 h-3" />
+                          {claimState === "success" ? "Claimed!" : claimState === "pending" || claimState === "confirming" ? "Claiming..." : "Claim"}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Ownership Share */}
+                    <div className="bg-zinc-900 rounded-lg p-3">
+                      <div className="text-xs text-zinc-500">Ownership Share</div>
+                      <div className="text-sm font-semibold mt-1">
+                        {totalSupply > 0 && unitBalance > 0
+                          ? `${((unitBalance / totalSupply) * 100).toFixed(2)}%`
+                          : "0%"}
+                      </div>
+                      <div className="text-[10px] text-zinc-600">of total supply</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Stats Section */}
+              <div className="px-2 mt-6">
+                <h2 className="text-sm font-bold mb-3">Stats</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-zinc-900 rounded-lg p-3">
+                    <div className="text-xs text-zinc-500">Market Cap</div>
+                    <div className="text-sm font-semibold mt-1">{formatUsd(marketCap, true)}</div>
+                  </div>
+                  <div className="bg-zinc-900 rounded-lg p-3">
+                    <div className="text-xs text-zinc-500">Liquidity</div>
+                    <div className="text-sm font-semibold mt-1">{formatUsd(liquidity, true)}</div>
+                  </div>
+                  <div className="bg-zinc-900 rounded-lg p-3">
+                    <div className="text-xs text-zinc-500">Total Supply</div>
+                    <div className="text-sm font-semibold mt-1">{totalSupply.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                  </div>
+                  <div className="bg-zinc-900 rounded-lg p-3">
+                    <div className="text-xs text-zinc-500">Total Content</div>
+                    <div className="text-sm font-semibold mt-1">{Number(unitState.totalSupply).toLocaleString()} stickers</div>
+                  </div>
+                </div>
               </div>
 
               {/* Spacer for bottom bar */}
