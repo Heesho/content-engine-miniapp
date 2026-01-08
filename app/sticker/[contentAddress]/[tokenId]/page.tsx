@@ -43,8 +43,7 @@ export default function StickerPage() {
   const imageUrl = metadata?.image ? ipfsToHttp(metadata.image) : null;
   const contentType = metadata?.contentType ?? "image";
 
-  const canCollect = address && piece && piece.owner.toLowerCase() !== address.toLowerCase();
-  const isOwner = address && piece && piece.owner.toLowerCase() === address.toLowerCase();
+  const canCollect = !!address && !!piece;
 
   const handleCollect = useCallback(async () => {
     if (!address || !piece) return;
@@ -229,7 +228,7 @@ export default function StickerPage() {
               <div>
                 <div className="text-xs text-gray-500">Owned by</div>
                 <div className="font-medium">
-                  {isOwner ? "You" : (getDisplayName(piece.owner) ?? truncateAddress(piece.owner))}
+                  {getDisplayName(piece.owner) ?? truncateAddress(piece.owner)}
                 </div>
               </div>
             </div>
@@ -238,47 +237,41 @@ export default function StickerPage() {
 
         {/* Collect button - fixed at bottom */}
         <div className="py-4">
-          {isOwner ? (
-            <div className="w-full py-3 rounded-xl bg-zinc-800 text-center text-gray-400 font-semibold">
-              You own this sticker
-            </div>
-          ) : (
-            <button
-              onClick={handleCollect}
-              disabled={!canCollect || collectState === "pending" || collectState === "confirming" || collectState === "success"}
-              className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
-                collectState === "success"
-                  ? "bg-teal-600 text-white"
-                  : collectState === "pending" || collectState === "confirming"
-                  ? "bg-zinc-700 text-gray-400"
-                  : "bg-teal-600 hover:bg-teal-500 text-white active:scale-[0.98]"
-              }`}
-            >
-              {collectState === "pending" && (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Confirm in wallet...
-                </>
-              )}
-              {collectState === "confirming" && (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Collecting...
-                </>
-              )}
-              {collectState === "success" && (
-                <>
-                  <CheckCircle2 className="w-5 h-5" />
-                  Collected!
-                </>
-              )}
-              {(collectState === "idle" || collectState === "error") && (
-                <>
-                  Collect for {formatUsdc(piece.price)}
-                </>
-              )}
-            </button>
-          )}
+          <button
+            onClick={handleCollect}
+            disabled={!canCollect || collectState === "pending" || collectState === "confirming" || collectState === "success"}
+            className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+              collectState === "success"
+                ? "bg-teal-600 text-white"
+                : collectState === "pending" || collectState === "confirming"
+                ? "bg-zinc-700 text-gray-400"
+                : "bg-teal-600 hover:bg-teal-500 text-white active:scale-[0.98]"
+            }`}
+          >
+            {collectState === "pending" && (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Confirm in wallet...
+              </>
+            )}
+            {collectState === "confirming" && (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Collecting...
+              </>
+            )}
+            {collectState === "success" && (
+              <>
+                <CheckCircle2 className="w-5 h-5" />
+                Collected!
+              </>
+            )}
+            {(collectState === "idle" || collectState === "error") && (
+              <>
+                Collect for {formatUsdc(piece.price)}
+              </>
+            )}
+          </button>
         </div>
       </div>
       <NavBar />
