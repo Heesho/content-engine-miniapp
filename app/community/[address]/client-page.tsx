@@ -22,7 +22,8 @@ import { formatEther, formatUnits, parseUnits, type Address } from "viem";
 
 import { NavBar } from "@/components/nav-bar";
 import { ContentFeed } from "@/components/content-feed";
-import { CreateContentModal } from "@/components/create-content-modal";
+import { useCreateContent } from "@/hooks/useCreateContent";
+import { Image, FileText, Link2, Upload, X, Loader2, CheckCircle2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCommunityState, useCommunityInfo } from "@/hooks/useCommunityState";
 import { useDexScreener } from "@/hooks/useDexScreener";
@@ -69,13 +70,24 @@ export default function CommunityDetailPage() {
   const params = useParams();
   const contentAddress = params.address as `0x${string}`;
 
-  const [mode, setMode] = useState<"feed" | "trade">("feed");
+  const [mode, setMode] = useState<"feed" | "trade" | "create">("feed");
   const [tradeDirection, setTradeDirection] = useState<"buy" | "sell">("buy");
   const [tradeAmount, setTradeAmount] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [tradeResult, setTradeResult] = useState<"success" | "failure" | null>(null);
+
+  // Create content state
+  const [contentType, setContentType] = useState<"image" | "text" | "link">("image");
+  const [createDescription, setCreateDescription] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [textContent, setTextContent] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
   const tradeResultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Create content hook
+  const { createContent, state: createState, error: createError, reset: resetCreate } = useCreateContent();
 
   // Use shared price hook
   const { ethUsdPrice, donutUsdPrice } = usePrices();
@@ -319,6 +331,81 @@ export default function CommunityDetailPage() {
     }
     await claimRewards(contentAddress);
   }, [address, connect, claimRewards, contentAddress]);
+
+  // Create content handlers
+  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be less than 5MB");
+      return;
+    }
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (event) => setImagePreview(event.target?.result as string);
+    reader.readAsDataURL(file);
+  }, []);
+
+  const resetCreateState = useCallback(() => {
+    setContentType("image");
+    setCreateDescription("");
+    setImageFile(null);
+    setImagePreview(null);
+    setTextContent("");
+    setLinkUrl("");
+    resetCreate();
+  }, [resetCreate]);
+
+  const handleCreateSubmit = useCallback(async () => {
+    if (!address) return;
+
+    const metadata: { description?: string; contentType: "image" | "text" | "link"; text?: string; link?: string } = {
+      description: createDescription || undefined,
+      contentType,
+    };
+
+    if (contentType === "image") {
+      if (!imageFile) {
+        alert("Please select an image");
+        return;
+      }
+    } else if (contentType === "text") {
+      if (!textContent.trim()) {
+        alert("Please enter some text");
+        return;
+      }
+      metadata.text = textContent;
+    } else if (contentType === "link") {
+      if (!linkUrl) {
+        alert("Please enter a URL");
+        return;
+      }
+      metadata.link = linkUrl;
+    }
+
+    await createContent(
+      contentAddress,
+      address,
+      metadata,
+      contentType === "image" ? imageFile ?? undefined : undefined
+    );
+  }, [address, contentAddress, contentType, createDescription, imageFile, textContent, linkUrl, createContent]);
+
+  // Handle create success
+  useEffect(() => {
+    if (createState === "success") {
+      const timer = setTimeout(() => {
+        resetCreateState();
+        setMode("feed");
+        refetchCommunityState();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [createState, resetCreateState, refetchCommunityState]);
 
   // Trade calculations
   const tradeBalance = tradeDirection === "buy" ? ethBalanceData : unitBalanceData;
@@ -578,7 +665,7 @@ export default function CommunityDetailPage() {
             </div>
           )}
 
-          {mode === "feed" ? (
+          {mode === "feed" && (
             <>
               {/* Content Feed Section */}
               <div className="px-2 mt-4">
@@ -592,9 +679,11 @@ export default function CommunityDetailPage() {
               {/* Spacer for bottom bar */}
               <div className="h-24" />
             </>
-          ) : (
+          )}
+
+          {(mode === "trade" || mode === "create") && (
             <>
-              {/* Trade Mode - Spacer */}
+              {/* Trade/Create Mode - Spacer */}
               <div className="h-96" />
             </>
           )}
@@ -603,11 +692,14 @@ export default function CommunityDetailPage() {
         {/* Bottom Action Bar */}
         <div className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-sm">
           <div className="max-w-[520px] mx-auto px-2 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+72px)]">
-            {mode === "feed" ? (
+            {mode === "feed" && (
               /* Feed Mode - Create & Trade Buttons */
               <div className="flex gap-2">
                 <button
-                  onClick={() => setShowCreateModal(true)}
+                  onClick={() => {
+                    resetCreateState();
+                    setMode("create");
+                  }}
                   disabled={!isConnected}
                   className={cn(
                     "flex-1 py-3 rounded-lg font-semibold transition-all text-sm flex items-center justify-center gap-2",
@@ -630,7 +722,174 @@ export default function CommunityDetailPage() {
                   Trade
                 </button>
               </div>
-            ) : (
+            )}
+
+            {mode === "create" && (
+              <>
+                {/* Create Mode UI */}
+                {/* Content type selector */}
+                <div className="flex gap-2 mb-3">
+                  {[
+                    { type: "image" as const, icon: Image, label: "Image" },
+                    { type: "text" as const, icon: FileText, label: "Text" },
+                    { type: "link" as const, icon: Link2, label: "Link" },
+                  ].map(({ type, icon: Icon, label }) => (
+                    <button
+                      key={type}
+                      onClick={() => setContentType(type)}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors",
+                        contentType === type
+                          ? "bg-teal-600 text-white"
+                          : "bg-zinc-800 text-gray-400 hover:bg-zinc-700"
+                      )}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span className="text-sm">{label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Content input area */}
+                <div className="bg-zinc-900 rounded-xl p-3 mb-3">
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+
+                  {contentType === "image" && (
+                    imagePreview ? (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full aspect-square object-cover rounded-lg"
+                        />
+                        <button
+                          onClick={() => {
+                            setImageFile(null);
+                            setImagePreview(null);
+                          }}
+                          className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-black/70"
+                        >
+                          <X className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full aspect-video bg-zinc-800 rounded-lg border-2 border-dashed border-zinc-700 hover:border-teal-500 transition-colors flex flex-col items-center justify-center gap-2"
+                      >
+                        <Upload className="w-8 h-8 text-gray-500" />
+                        <span className="text-gray-500 text-sm">Click to upload an image</span>
+                        <span className="text-gray-600 text-xs">Max 5MB</span>
+                      </button>
+                    )
+                  )}
+
+                  {contentType === "text" && (
+                    <textarea
+                      value={textContent}
+                      onChange={(e) => setTextContent(e.target.value)}
+                      placeholder="What's on your mind?"
+                      className="w-full h-32 bg-zinc-800 rounded-lg p-3 text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                      maxLength={2000}
+                    />
+                  )}
+
+                  {contentType === "link" && (
+                    <input
+                      type="url"
+                      value={linkUrl}
+                      onChange={(e) => setLinkUrl(e.target.value)}
+                      placeholder="https://example.com"
+                      className="w-full bg-zinc-800 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                    />
+                  )}
+                </div>
+
+                {/* Description input */}
+                <div className="bg-zinc-900 rounded-xl p-3 mb-3">
+                  <label className="block text-xs text-gray-500 mb-1">Description (optional)</label>
+                  <input
+                    type="text"
+                    value={createDescription}
+                    onChange={(e) => setCreateDescription(e.target.value)}
+                    placeholder="Add a description..."
+                    className="w-full bg-zinc-800 rounded-lg p-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                    maxLength={280}
+                  />
+                </div>
+
+                {/* Error/Success messages */}
+                {createError && (
+                  <div className="p-3 mb-3 bg-teal-500/20 border border-teal-500/50 rounded-lg text-teal-400 text-sm">
+                    {createError.message}
+                  </div>
+                )}
+                {createState === "success" && (
+                  <div className="p-3 mb-3 bg-teal-500/20 border border-teal-500/50 rounded-lg text-teal-400 text-sm flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Content created successfully!
+                  </div>
+                )}
+
+                {/* Create Buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      resetCreateState();
+                      setMode("feed");
+                    }}
+                    className="flex-1 py-3 rounded-lg font-semibold transition-all text-sm bg-zinc-800 text-white hover:bg-zinc-700 active:scale-[0.98]"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={handleCreateSubmit}
+                    disabled={createState === "uploading" || createState === "pending" || createState === "confirming" || createState === "success"}
+                    className={cn(
+                      "flex-1 py-3 rounded-lg font-semibold transition-all text-sm flex items-center justify-center gap-2",
+                      createState === "uploading" || createState === "pending" || createState === "confirming" || createState === "success"
+                        ? "bg-zinc-700 text-gray-400 cursor-not-allowed"
+                        : "bg-teal-500 text-black hover:bg-teal-600 active:scale-[0.98]"
+                    )}
+                  >
+                    {createState === "uploading" && (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Uploading...
+                      </>
+                    )}
+                    {createState === "pending" && (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Confirm...
+                      </>
+                    )}
+                    {createState === "confirming" && (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Creating...
+                      </>
+                    )}
+                    {createState === "success" && (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        Created!
+                      </>
+                    )}
+                    {(createState === "idle" || createState === "error") && "Create"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {mode === "trade" && (
               <>
                 {/* Trade Mode UI */}
                 {/* Trade Input */}
@@ -793,19 +1052,6 @@ export default function CommunityDetailPage() {
           </div>
         </div>
       </div>
-
-      {/* Create Content Modal */}
-      {address && (
-        <CreateContentModal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          contentAddress={contentAddress}
-          userAddress={address}
-          onSuccess={() => {
-            refetchCommunityState();
-          }}
-        />
-      )}
 
       <NavBar />
     </main>
