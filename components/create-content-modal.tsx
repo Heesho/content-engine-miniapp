@@ -360,7 +360,7 @@ export function CreateContentModal({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-zinc-900 border-t border-zinc-800 p-4">
+        <div className="sticky bottom-0 bg-zinc-900 border-t border-zinc-800 p-4 pb-20">
           <button
             onClick={handleSubmit}
             disabled={
