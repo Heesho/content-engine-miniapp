@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { formatUnits } from "viem";
-import { ImageIcon, FileText, Link2, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ImageIcon, FileText, Link2 } from "lucide-react";
 import { ipfsToHttp, USDC_DECIMALS } from "@/lib/constants";
 import type { ContentPiece } from "@/hooks/useContentFeed";
 import type { ContentMetadata } from "@/lib/contracts";
@@ -11,9 +10,7 @@ import type { ContentMetadata } from "@/lib/contracts";
 type ContentCardProps = {
   piece: ContentPiece;
   metadata?: ContentMetadata;
-  onCollect?: () => void;
-  isCollecting?: boolean;
-  canCollect?: boolean;
+  onClick?: () => void;
 };
 
 const formatUsdc = (value: bigint) => {
@@ -27,9 +24,7 @@ const formatUsdc = (value: bigint) => {
 export function ContentCard({
   piece,
   metadata: propMetadata,
-  onCollect,
-  isCollecting = false,
-  canCollect = true,
+  onClick,
 }: ContentCardProps) {
   const [metadata, setMetadata] = useState<ContentMetadata | null>(
     propMetadata ?? null
@@ -56,12 +51,6 @@ export function ContentCard({
 
   const imageUrl = metadata?.image ? ipfsToHttp(metadata.image) : null;
   const contentType = metadata?.contentType ?? "image";
-
-  const handleClick = () => {
-    if (canCollect && onCollect && !isCollecting) {
-      onCollect();
-    }
-  };
 
   // Render content thumbnail
   const renderThumbnail = () => {
@@ -109,44 +98,18 @@ export function ContentCard({
 
   return (
     <button
-      onClick={handleClick}
-      disabled={!canCollect || isCollecting}
-      className={cn(
-        "relative w-full aspect-square rounded-xl overflow-hidden transition-all",
-        canCollect && !isCollecting && "hover:ring-2 hover:ring-teal-500 hover:scale-[1.02] active:scale-[0.98]",
-        !canCollect && "opacity-70"
-      )}
+      onClick={onClick}
+      className="relative w-full aspect-square rounded-xl overflow-hidden transition-all hover:ring-2 hover:ring-teal-500 hover:scale-[1.02] active:scale-[0.98]"
     >
       {/* Thumbnail */}
       {renderThumbnail()}
 
       {/* Price overlay */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2 pt-6">
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-bold text-white">
-            {formatUsdc(piece.price)}
-          </span>
-          {canCollect && (
-            <span className="text-xs text-teal-400 font-medium">
-              Collect
-            </span>
-          )}
-        </div>
+        <span className="text-lg font-bold text-white">
+          {formatUsdc(piece.price)}
+        </span>
       </div>
-
-      {/* Loading overlay */}
-      {isCollecting && (
-        <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
-        </div>
-      )}
-
-      {/* Owned indicator */}
-      {!canCollect && (
-        <div className="absolute top-2 right-2 px-2 py-0.5 bg-zinc-900/80 rounded text-xs text-gray-400">
-          Owned
-        </div>
-      )}
     </button>
   );
 }
