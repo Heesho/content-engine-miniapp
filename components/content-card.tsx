@@ -2,23 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { formatUnits } from "viem";
-import { ExternalLink, User, ImageIcon, FileText, Link2 } from "lucide-react";
+import { ImageIcon, FileText, Link2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ipfsToHttp, USDC_DECIMALS } from "@/lib/constants";
 import type { ContentPiece } from "@/hooks/useContentFeed";
 import type { ContentMetadata } from "@/lib/contracts";
-import { CollectButton } from "./collect-button";
 
 type ContentCardProps = {
   piece: ContentPiece;
   metadata?: ContentMetadata;
-  creatorName?: string;
-  creatorAvatar?: string;
-  ownerName?: string;
-  ownerAvatar?: string;
   onCollect?: () => void;
   isCollecting?: boolean;
-  showCollectButton?: boolean;
+  canCollect?: boolean;
 };
 
 const formatUsdc = (value: bigint) => {
@@ -29,26 +24,17 @@ const formatUsdc = (value: bigint) => {
   return `$${num.toFixed(4)}`;
 };
 
-const truncateAddress = (address: string) => {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-};
-
 export function ContentCard({
   piece,
   metadata: propMetadata,
-  creatorName,
-  creatorAvatar,
-  ownerName,
-  ownerAvatar,
   onCollect,
   isCollecting = false,
-  showCollectButton = true,
+  canCollect = true,
 }: ContentCardProps) {
   const [metadata, setMetadata] = useState<ContentMetadata | null>(
     propMetadata ?? null
   );
   const [imageError, setImageError] = useState(false);
-  const [expanded, setExpanded] = useState(false);
 
   // Fetch metadata from IPFS if not provided
   useEffect(() => {
@@ -71,167 +57,96 @@ export function ContentCard({
   const imageUrl = metadata?.image ? ipfsToHttp(metadata.image) : null;
   const contentType = metadata?.contentType ?? "image";
 
-  // Render content based on type
-  const renderContent = () => {
+  const handleClick = () => {
+    if (canCollect && onCollect && !isCollecting) {
+      onCollect();
+    }
+  };
+
+  // Render content thumbnail
+  const renderThumbnail = () => {
     if (contentType === "image" && imageUrl && !imageError) {
       return (
-        <div className="relative w-full aspect-square bg-zinc-800 rounded-lg overflow-hidden">
-          <img
-            src={imageUrl}
-            alt={metadata?.name ?? "Content"}
-            className="w-full h-full object-cover"
-            onError={() => setImageError(true)}
-          />
-        </div>
+        <img
+          src={imageUrl}
+          alt={metadata?.name ?? "Content"}
+          className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
+        />
       );
     }
 
     if (contentType === "text" && metadata?.text) {
-      const text = metadata.text;
-      const isLong = text.length > 280;
-      const displayText = expanded || !isLong ? text : text.slice(0, 280) + "...";
-
       return (
-        <div className="bg-zinc-800 rounded-lg p-4">
-          <p className="text-white whitespace-pre-wrap break-words">
-            {displayText}
+        <div className="w-full h-full bg-zinc-800 p-2 flex items-center justify-center">
+          <p className="text-xs text-gray-300 line-clamp-4 text-center">
+            {metadata.text.slice(0, 100)}
           </p>
-          {isLong && (
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="text-teal-500 text-sm mt-2 hover:text-teal-400"
-            >
-              {expanded ? "Show less" : "Read more"}
-            </button>
-          )}
         </div>
       );
     }
 
-    if (contentType === "link" && metadata?.link) {
-      const preview = metadata.linkPreview;
+    if (contentType === "link" && metadata?.linkPreview?.image) {
       return (
-        <a
-          href={metadata.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block bg-zinc-800 rounded-lg overflow-hidden hover:bg-zinc-700 transition-colors"
-        >
-          {preview?.image && (
-            <div className="w-full aspect-video bg-zinc-700">
-              <img
-                src={preview.image}
-                alt={preview.title ?? "Link preview"}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-            </div>
-          )}
-          <div className="p-3">
-            <div className="flex items-center gap-2 text-teal-500 text-sm mb-1">
-              <ExternalLink className="w-3 h-3" />
-              {new URL(metadata.link).hostname}
-            </div>
-            {preview?.title && (
-              <h4 className="font-medium text-white">{preview.title}</h4>
-            )}
-            {preview?.description && (
-              <p className="text-sm text-gray-400 mt-1 line-clamp-2">
-                {preview.description}
-              </p>
-            )}
-          </div>
-        </a>
+        <img
+          src={metadata.linkPreview.image}
+          alt={metadata.linkPreview?.title ?? "Link"}
+          className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
+        />
       );
     }
 
-    // Fallback for unknown/missing content
+    // Fallback
     return (
-      <div className="bg-zinc-800 rounded-lg p-8 flex flex-col items-center justify-center text-gray-500">
-        {contentType === "image" && <ImageIcon className="w-8 h-8 mb-2" />}
-        {contentType === "text" && <FileText className="w-8 h-8 mb-2" />}
-        {contentType === "link" && <Link2 className="w-8 h-8 mb-2" />}
-        <span className="text-sm">Content unavailable</span>
+      <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+        {contentType === "image" && <ImageIcon className="w-8 h-8 text-gray-600" />}
+        {contentType === "text" && <FileText className="w-8 h-8 text-gray-600" />}
+        {contentType === "link" && <Link2 className="w-8 h-8 text-gray-600" />}
       </div>
     );
   };
 
   return (
-    <div className="bg-zinc-900 rounded-xl overflow-hidden mb-3">
-      {/* Header: Creator info */}
-      <div className="flex items-center justify-between p-3 border-b border-zinc-800">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden">
-            {creatorAvatar ? (
-              <img
-                src={creatorAvatar}
-                alt={creatorName ?? "Creator"}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User className="w-4 h-4 text-gray-500" />
-            )}
-          </div>
-          <div>
-            <div className="text-sm font-medium text-white">
-              {creatorName ?? truncateAddress(piece.creator)}
-            </div>
-            <div className="text-xs text-gray-500">Creator</div>
-          </div>
-        </div>
+    <button
+      onClick={handleClick}
+      disabled={!canCollect || isCollecting}
+      className={cn(
+        "relative w-full aspect-square rounded-xl overflow-hidden transition-all",
+        canCollect && !isCollecting && "hover:ring-2 hover:ring-teal-500 hover:scale-[1.02] active:scale-[0.98]",
+        !canCollect && "opacity-70"
+      )}
+    >
+      {/* Thumbnail */}
+      {renderThumbnail()}
 
-        {/* Content type indicator */}
-        <div className="flex items-center gap-1 text-gray-500 text-xs">
-          {contentType === "image" && <ImageIcon className="w-3 h-3" />}
-          {contentType === "text" && <FileText className="w-3 h-3" />}
-          {contentType === "link" && <Link2 className="w-3 h-3" />}
-          <span className="capitalize">{contentType}</span>
+      {/* Price overlay */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2 pt-6">
+        <div className="flex items-center justify-between">
+          <span className="text-lg font-bold text-white">
+            {formatUsdc(piece.price)}
+          </span>
+          {canCollect && (
+            <span className="text-xs text-teal-400 font-medium">
+              Collect
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-3">{renderContent()}</div>
-
-      {/* Description if available */}
-      {metadata?.description && (
-        <div className="px-3 pb-2">
-          <p className="text-sm text-gray-400">{metadata.description}</p>
+      {/* Loading overlay */}
+      {isCollecting && (
+        <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
         </div>
       )}
 
-      {/* Footer: Owner + Collect button */}
-      <div className="flex items-center justify-between p-3 border-t border-zinc-800">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden">
-            {ownerAvatar ? (
-              <img
-                src={ownerAvatar}
-                alt={ownerName ?? "Owner"}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User className="w-3 h-3 text-gray-500" />
-            )}
-          </div>
-          <div className="text-xs">
-            <span className="text-gray-500">Owned by </span>
-            <span className="text-white">
-              {ownerName ?? truncateAddress(piece.owner)}
-            </span>
-          </div>
+      {/* Owned indicator */}
+      {!canCollect && (
+        <div className="absolute top-2 right-2 px-2 py-0.5 bg-zinc-900/80 rounded text-xs text-gray-400">
+          Owned
         </div>
-
-        {showCollectButton && (
-          <CollectButton
-            price={piece.price}
-            onClick={onCollect}
-            isLoading={isCollecting}
-            disabled={isCollecting}
-          />
-        )}
-      </div>
-    </div>
+      )}
+    </button>
   );
 }

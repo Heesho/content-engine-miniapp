@@ -5,7 +5,6 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { ContentCard } from "./content-card";
 import { useContentFeed, useContentMetadataBatch } from "@/hooks/useContentFeed";
 import { useCollect } from "@/hooks/useCollect";
-import { useBatchProfiles } from "@/hooks/useBatchProfiles";
 import type { ContentPiece } from "@/hooks/useContentFeed";
 
 type ContentFeedProps = {
@@ -31,22 +30,12 @@ export function ContentFeed({ contentAddress, userAddress }: ContentFeedProps) {
     (p) => !allPieces.some((a) => a.tokenId === p.tokenId)
   )];
 
-  // Get unique addresses for profile lookups
-  const uniqueAddresses = [
-    ...new Set([
-      ...displayPieces.map((p) => p.creator),
-      ...displayPieces.map((p) => p.owner),
-    ]),
-  ];
-
-  const { getDisplayName, profiles } = useBatchProfiles(uniqueAddresses);
-
   // Batch fetch metadata
   const tokenUris = displayPieces.map((p) => p.uri).filter(Boolean);
   const { metadataMap } = useContentMetadataBatch(tokenUris);
 
   // Collect hook
-  const { collect, state: collectState, reset: resetCollect } = useCollect();
+  const { collect, reset: resetCollect } = useCollect();
 
   const handleCollect = useCallback(
     async (piece: ContentPiece) => {
@@ -114,30 +103,26 @@ export function ContentFeed({ contentAddress, userAddress }: ContentFeedProps) {
         </button>
       </div>
 
-      {/* Content cards */}
-      {displayPieces.map((piece) => {
-        const creatorProfile = profiles[piece.creator.toLowerCase()];
-        const ownerProfile = profiles[piece.owner.toLowerCase()];
-        const metadata = metadataMap[piece.uri];
+      {/* 2-column grid of content cards */}
+      <div className="grid grid-cols-2 gap-2">
+        {displayPieces.map((piece) => {
+          const metadata = metadataMap[piece.uri];
+          const canCollect =
+            !!userAddress &&
+            piece.owner.toLowerCase() !== userAddress.toLowerCase();
 
-        return (
-          <ContentCard
-            key={`${piece.contentAddress}-${piece.tokenId}`}
-            piece={piece}
-            metadata={metadata}
-            creatorName={getDisplayName(piece.creator)}
-            creatorAvatar={creatorProfile?.pfpUrl}
-            ownerName={getDisplayName(piece.owner)}
-            ownerAvatar={ownerProfile?.pfpUrl}
-            onCollect={() => handleCollect(piece)}
-            isCollecting={collectingId === piece.tokenId}
-            showCollectButton={
-              !!userAddress &&
-              piece.owner.toLowerCase() !== userAddress.toLowerCase()
-            }
-          />
-        );
-      })}
+          return (
+            <ContentCard
+              key={`${piece.contentAddress}-${piece.tokenId}`}
+              piece={piece}
+              metadata={metadata}
+              onCollect={() => handleCollect(piece)}
+              isCollecting={collectingId === piece.tokenId}
+              canCollect={canCollect}
+            />
+          );
+        })}
+      </div>
 
       {/* Load more button */}
       {hasMore && (
