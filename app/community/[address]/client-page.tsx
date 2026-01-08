@@ -522,39 +522,37 @@ export default function CommunityDetailPage() {
                   {copiedLink ? "Copied" : "Share"}
                 </button>
               </div>
-              <div className="bg-zinc-900 rounded-xl p-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-xs text-zinc-500">Balance</div>
-                    <div className="flex items-center gap-1 text-sm font-semibold">
-                      {tokenLogoUrl ? (
-                        <img src={tokenLogoUrl} alt={tokenSymbol} className="w-4 h-4 rounded-full" />
-                      ) : (
-                        <span className="w-4 h-4 rounded-full bg-teal-500 flex items-center justify-center text-[8px] text-black font-bold">
-                          {tokenSymbol.slice(0, 2)}
-                        </span>
-                      )}
-                      <span>{unitBalance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                    </div>
-                    <div className="text-[10px] text-zinc-600">{formatUsd(unitBalanceUsd)}</div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs text-zinc-500">Balance</div>
+                  <div className="flex items-center gap-1 text-sm font-semibold">
+                    {tokenLogoUrl ? (
+                      <img src={tokenLogoUrl} alt={tokenSymbol} className="w-4 h-4 rounded-full" />
+                    ) : (
+                      <span className="w-4 h-4 rounded-full bg-teal-500 flex items-center justify-center text-[8px] text-black font-bold">
+                        {tokenSymbol.slice(0, 2)}
+                      </span>
+                    )}
+                    <span>{unitBalance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                   </div>
-                  {hasPendingRewards && (
-                    <div>
-                      <div className="text-xs text-zinc-500">Pending Rewards</div>
-                      <div className="text-sm font-semibold text-teal-400">
-                        +{formatUsd(pendingUnitUsd + pendingQuoteUsd)}
-                      </div>
-                      <button
-                        onClick={handleClaim}
-                        disabled={claimState === "pending" || claimState === "confirming"}
-                        className="mt-1 flex items-center gap-1 text-[10px] text-teal-400 hover:text-teal-300"
-                      >
-                        <Coins className="w-3 h-3" />
-                        {claimState === "success" ? "Claimed!" : claimState === "pending" || claimState === "confirming" ? "Claiming..." : "Claim"}
-                      </button>
-                    </div>
-                  )}
+                  <div className="text-[10px] text-zinc-600">{formatUsd(unitBalanceUsd)}</div>
                 </div>
+                {hasPendingRewards && (
+                  <div>
+                    <div className="text-xs text-zinc-500">Pending Rewards</div>
+                    <div className="text-sm font-semibold text-teal-400">
+                      +{formatUsd(pendingUnitUsd + pendingQuoteUsd)}
+                    </div>
+                    <button
+                      onClick={handleClaim}
+                      disabled={claimState === "pending" || claimState === "confirming"}
+                      className="mt-1 flex items-center gap-1 text-[10px] text-teal-400 hover:text-teal-300"
+                    >
+                      <Coins className="w-3 h-3" />
+                      {claimState === "success" ? "Claimed!" : claimState === "pending" || claimState === "confirming" ? "Claiming..." : "Claim"}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
